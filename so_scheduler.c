@@ -149,6 +149,7 @@ static void* thread_func(void *arg)
 		scheduler->current_thread = pair.index;
 		scheduler->threads[pair.index].state = RUNNING;
 		add(scheduler->ready_queue, (void *)&pair);
+		pthread_cond_signal(&scheduler->cond_running);
 	}
 	pthread_mutex_unlock(&scheduler->mutex_running);
 	printf("[THREAD_FUNCTION]: m-am terminat %d\n", ind);

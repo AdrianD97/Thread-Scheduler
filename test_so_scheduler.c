@@ -7,6 +7,7 @@
 		la fiecare planificare), eveniment dupa care asteapata
 */
 #include <stdio.h>
+#include <limits.h>
 #include "so_scheduler.h"
 
 void func_child_child(unsigned int p)
@@ -18,7 +19,9 @@ void func_child(unsigned int p)
 {
 	tid_t t_id = so_fork(&func_child_child, 2);
 
-	printf("Child: %lu\n", t_id);
+	printf("Child_cild: %lu\n", t_id);
+
+	for (int i = INT_MAX; i >= 0; --i);
 }
 
 void func(unsigned int p)
