@@ -2,6 +2,9 @@
 #include <stdio.h>
 /* TODO: End of testing code */
 
+/* TODO: Daca nu mrege conversia lui 0 la Pair atunci fac o functie in 
+Heap care sa imi spuna daca este sau nu empty*/
+
 #include "so_scheduler.h"
 #include "utils/utils.h"
 
@@ -30,7 +33,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 		return ERROR;
 	}
 
-	scheduler->ready_queue = createPriorityQueue(MAX_THREADS, compare_pairs);
+	scheduler->ready_queue = createPriorityQueue(MAX_THREADS);
 	if (!scheduler->ready_queue) {
 		free(scheduler->threads);
 		free(scheduler);
@@ -77,7 +80,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 
 static void* thread_func(void *arg)
 {
-	Pair pair, *pr;
+	Pair pair;
 	unsigned int q;
 	int preempted = 0, first = 0;
 	so_handler *handler = (so_handler *)arg;
@@ -89,7 +92,7 @@ static void* thread_func(void *arg)
 	scheduler->threads[pair.index].thread_id = pthread_self();
 
 	scheduler->threads[pair.index].state = READY;
-	add(scheduler->ready_queue, (void *)&pair);
+	add(scheduler->ready_queue, pair);
 
 	if (scheduler->current_thread != INVLAID_INDEX) {
 		q = --scheduler->threads[scheduler->current_thread].current_time_quantum;
@@ -125,30 +128,30 @@ static void* thread_func(void *arg)
 	//////////////
 	*/
 	while (scheduler->threads[pair.index].state != RUNNING) {
+		printf("Eu ind = %d astepr RUNNING.\n", ind);
 		pthread_cond_wait(&scheduler->cond_running,
 			&scheduler->mutex_running);
 	}
 
-	pair = *(Pair *)remove_head(scheduler->ready_queue);
-	add(scheduler->ready_queue, (void *)&pair);
+	pair = remove_head(scheduler->ready_queue);
+	add(scheduler->ready_queue, pair);
 
 	/*TODO OBS: El o sa fie blocat in alte functii 
 	pentru ca voi face wait la inceputul functiilor 
 	ca starea lui sa devina RUNNING */
 	handler(pair.priority);
 
-	pair = *(Pair *)remove_head(scheduler->ready_queue);
+	pair = remove_head(scheduler->ready_queue);
 	scheduler->threads[pair.index].state = TERMINATED;
 
 	// get another thread
-	pr = (Pair *)remove_head(scheduler->ready_queue);
-	if (pr) {
+	if (head(scheduler->ready_queue)) {
 		printf("[THREAD_FUNCTION]: aproape m-am terminat %d\n", ind);
 		printf("[THREAD_FUNCTION]: Dau procesul altuia pentru ca eu m-am terminat.\n");
-		pair = *pr;
+		pair = remove_head(scheduler->ready_queue);
 		scheduler->current_thread = pair.index;
 		scheduler->threads[pair.index].state = RUNNING;
-		add(scheduler->ready_queue, (void *)&pair);
+		add(scheduler->ready_queue, pair);
 	}
 	pthread_mutex_unlock(&scheduler->mutex_running);
 	printf("[THREAD_FUNCTION]: m-am terminat %d\n", ind);

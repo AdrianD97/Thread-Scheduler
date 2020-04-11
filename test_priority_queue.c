@@ -3,6 +3,7 @@
 
 #include "utils/utils.h"
 #include "PriorityQueue/PriorityQueue.h"
+/* TODO: SA rertestez acum, pentru ca am schimbat in structura de date */
 
 void test_priority_queue()
 {

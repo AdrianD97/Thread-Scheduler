@@ -1,4 +1,4 @@
-SOURCES=test_so_scheduler.c so_scheduler.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c
+SOURCES=test_so_scheduler.c so_scheduler.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
 
 test_so_scheduler: $(SOURCES)
 	gcc -Wall $^ -o $@ -lpthread

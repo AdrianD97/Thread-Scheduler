@@ -20,19 +20,6 @@ typedef enum {
 } STATE;
 
 typedef struct {
-	unsigned int index;
-	unsigned int priority;
-} Pair;
-
-int compare_pairs(void *arg1, void *arg2)
-{
-	Pair *pair1 = (Pair *)arg1;
-	Pair *pair2 = (Pair *)arg2;
-
-	return pair1->priority - pair2->priority;
-}
-
-typedef struct {
 	unsigned int priority;
 	unsigned int current_time_quantum;
 	STATE state;

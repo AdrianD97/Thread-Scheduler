@@ -6,16 +6,16 @@
 typedef MaxHeap PriorityQueue;
 
 /* create an empty Priority Queue (the method is a kind of C++ constructor) */
-PriorityQueue* createPriorityQueue(int size, int (*compare)(void*, void*));
+PriorityQueue* createPriorityQueue(int size);
 
 /* add an item to Priority Queue */
-void add(PriorityQueue *priorityQueue, void* value);
+void add(PriorityQueue *priorityQueue, Pair value);
 
 /* get head of the Priority Queue */
-void* head(const PriorityQueue *priorityQueue);
+Pair const* head(const PriorityQueue *priorityQueue);
 
 /* remove head of the Priority Queue */
-void* remove_head(PriorityQueue *priorityQueue);
+Pair remove_head(PriorityQueue *priorityQueue);
 
 /* free used memory */
 void destroy(PriorityQueue *priorityQueue);
