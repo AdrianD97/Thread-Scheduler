@@ -1,4 +1,4 @@
-test_priority_queue: test_priority_queue.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c
+test_priority_queue: test_priority_queue.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
 	gcc -Wall $^ -o $@
 
 clean:

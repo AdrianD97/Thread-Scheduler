@@ -9,7 +9,7 @@ Heap* createEmptyHeap(int size)
 	heap->size = size;
 	heap->index = 0;
 	heap->compare = compare_pairs;
-	heap->arr = (Pair *)calloc((size + 1), sizeof(Pair));
+	heap->arr = (Pair *)malloc((size + 1) * sizeof(Pair));
 	if (!heap->arr) {
 		free(heap);
 		return NULL;
@@ -70,7 +70,7 @@ void addItemToHeap(Heap* heap, Pair value, int type)
 }
 
 Pair const* getHeapRoot(const Heap* heap) {
-	if (heap->index == 0) {
+	if (!heap || heap->index == 0) {
 		return NULL;
 	}
 

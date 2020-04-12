@@ -8,7 +8,7 @@
 #define SUCCESS	0
 #define ERROR	(-1)
 #define MAX_THREADS	1000
-#define INVLAID_INDEX	(-1)
+#define INVALID_INDEX	(-1)
 #define INVALID_EVENT	(-1)
 
 typedef enum {

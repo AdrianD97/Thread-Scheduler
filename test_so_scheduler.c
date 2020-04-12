@@ -9,23 +9,48 @@
 #include <stdio.h>
 #include "so_scheduler.h"
 
-void func_child_child(unsigned int p)
+void func_child_child_child_child_child(unsigned int p)
 {
 
 }
 
+void func_child_child_child_child(unsigned int p)
+{
+	tid_t t_id = so_fork(&func_child_child_child_child_child, 10);
+
+	printf("Child_child_child_child_child_child: %lu\n", t_id);
+}
+
+void func_child_child_child(unsigned int p)
+{
+//	tid_t t_id = so_fork(&func_child_child_child_child, 10);
+
+//	printf("Child_child_child_child_child: %lu\n", t_id);
+}
+
+void func_child_child(unsigned int p)
+{
+	tid_t t_id = so_fork(&func_child_child_child, 1);
+
+	printf("Child_child_child_child: %lu\n", t_id);
+}
+
 void func_child(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child_child, 2);
+	// tid_t t_id = so_fork(&func_child_child, 2);
 
-	printf("Child: %lu\n", t_id);
+	// printf("Child_child_child: %lu\n", t_id);
 }
 
 void func(unsigned int p)
 {
 	tid_t t_id = so_fork(&func_child, 1);
 
-	printf("Child: %lu\n", t_id);
+	printf("Child_child: %lu\n", t_id);
+
+	t_id = so_fork(&func_child_child, 12);
+
+	printf("Child_child: %lu\n", t_id);
 }
 
 int main(int argc, char const *argv[])
@@ -36,7 +61,7 @@ int main(int argc, char const *argv[])
 
 	tid_t t_id = so_fork(&func, 10);
 
-	printf("parent: %lu\n", t_id);
+	printf("child: %lu\n", t_id);
 
 	so_end();
 	return 0;
