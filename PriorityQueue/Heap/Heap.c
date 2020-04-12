@@ -9,7 +9,7 @@ Heap* createEmptyHeap(int size)
 	heap->size = size;
 	heap->index = 0;
 	heap->compare = compare_pairs;
-	heap->arr = (Pair *)malloc((size + 1) * sizeof(Pair));
+	heap->arr = (Node *)malloc((size + 1) * sizeof(Node));
 	if (!heap->arr) {
 		free(heap);
 		return NULL;
@@ -22,7 +22,7 @@ static void pushUp(Heap* heap, int type)
 {
 	int index = heap->index;
 	int parent, result = 0;
-	Pair tmp;
+	Node tmp;
 
 	do {
 		parent = index / 2;
@@ -54,7 +54,7 @@ static void pushUp(Heap* heap, int type)
 	type = MIN_HEAP -> heap is a min heap
 	type = MAX_HEAP -> heap is a max heap
 */
-void addItemToHeap(Heap* heap, Pair value, int type)
+void addItemToHeap(Heap* heap, Node value, int type)
 {
 	if (!heap || (type != MAX_HEAP && type != MIN_HEAP)) {
 		return;
@@ -69,12 +69,12 @@ void addItemToHeap(Heap* heap, Pair value, int type)
 	pushUp(heap, type);
 }
 
-Pair const* getHeapRoot(const Heap* heap) {
+Node const* getHeapRoot(const Heap* heap) {
 	if (!heap || heap->index == 0) {
 		return NULL;
 	}
 
-	return (Pair const *)&heap->arr[ROOT];
+	return (Node const *)&heap->arr[ROOT];
 }
 
 static void pushDown(Heap* heap, int type) {
@@ -84,7 +84,7 @@ static void pushDown(Heap* heap, int type) {
 
 	int index = ROOT, result;
 	int child_ind, result_;
-	Pair tmp;
+	Node tmp;
 
 	do {
 		if (2 * index <= heap->index) {
@@ -128,8 +128,8 @@ static void pushDown(Heap* heap, int type) {
 	type = MIN_HEAP -> heap is a min heap
 	type = MAX_HEAP -> heap is a max heap
 */
-Pair removeHeapRoot(Heap* heap, int type) {
-	Pair tmp;
+Node removeHeapRoot(Heap* heap, int type) {
+	Node tmp;
 
 	if (!heap || !heap->arr || heap->index == 0 || (type != MAX_HEAP && type != MIN_HEAP)) {
 		return tmp;

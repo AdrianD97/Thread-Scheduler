@@ -13,8 +13,8 @@
 typedef struct {
 	int size;
 	int index;
-	int (*compare)(Pair*, Pair*);
-	Pair* arr;
+	int (*compare)(Node*, Node*);
+	Node* arr;
 } Heap;
 
 typedef Heap MinHeap;
@@ -28,17 +28,17 @@ Heap* createEmptyHeap(int size);
 	type = MIN_HEAP -> heap is a min heap
 	type = MAX_HEAP -> heap is a max heap
 */
-void addItemToHeap(Heap* heap, Pair value, int type);
+void addItemToHeap(Heap* heap, Node value, int type);
 
 /* get root of the heap */
-Pair const* getHeapRoot(const Heap* heap);
+Node const* getHeapRoot(const Heap* heap);
 
 /*
 	Remove and return root of the heap.
 	type = MIN_HEAP -> heap is a min heap
 	type = MAX_HEAP -> heap is a max heap
 */
-Pair removeHeapRoot(Heap* heap, int type);
+Node removeHeapRoot(Heap* heap, int type);
 
 /* free used memory */
 void freeHeapMemory(Heap *heap);

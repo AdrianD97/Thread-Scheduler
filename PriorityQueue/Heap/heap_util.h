@@ -4,8 +4,9 @@
 typedef struct {
 	unsigned int index;
 	unsigned int priority;
-} Pair;
+	unsigned int timestamp;
+} Node;
 
-int compare_pairs(Pair *pair1, Pair *pair2);
+int compare_pairs(Node *node1, Node *node2);
 
 #endif /* HEAP_UTIL_H_ */

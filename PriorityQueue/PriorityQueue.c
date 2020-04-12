@@ -5,17 +5,17 @@ PriorityQueue* createPriorityQueue(int size)
 	return createEmptyHeap(size);
 }
 
-void add(PriorityQueue *priorityQueue, Pair value)
+void add(PriorityQueue *priorityQueue, Node value)
 {
 	addItemToHeap(priorityQueue, value, MAX_HEAP);
 }
 
-Pair const* head(const PriorityQueue *priorityQueue)
+Node const* head(const PriorityQueue *priorityQueue)
 {
 	return getHeapRoot(priorityQueue);
 }
 
-Pair remove_head(PriorityQueue *priorityQueue)
+Node remove_head(PriorityQueue *priorityQueue)
 {
 	return removeHeapRoot(priorityQueue, MAX_HEAP);
 }

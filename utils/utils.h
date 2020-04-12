@@ -32,6 +32,7 @@ typedef struct {
 	unsigned int time_quantum;
 	unsigned int nr_events;
 	unsigned int current_thread; /* index in array-ul de thread-uri */
+	unsigned int timestamp;
 	thread_t *threads;
 	PriorityQueue *ready_queue;
 	/*ADD syncroniziny elements*/
