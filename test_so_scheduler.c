@@ -64,7 +64,7 @@ void f2(unsigned int p)
 
 	t_id = so_fork(&func, 10);
 
-	printf("[F2]: al saptelea apel al lui so_fork a intors %lu\n", t_id);
+	printf("[F2]: al saselea apel al lui so_fork a intors %lu\n", t_id);
 
 	t_id = so_fork(&func, 200);
 
