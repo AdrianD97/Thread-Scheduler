@@ -1,47 +1,13 @@
-/* TODO
-	doar pentru observatii acest fisier, pentru ca nu stiu daca numele este ok
-*/
-/*
-	1. Am nevoie de un array de obiecte de genul:
-		prioritate, stare(enum), cuanta_curenta(va fi initializata cu cuanta initiala
-		la fiecare planificare), eveniment dupa care asteapata
-*/
 #include <stdio.h>
 #include <limits.h>
 #include "so_scheduler.h"
 
-void func_child_child_child_child_child(unsigned int p)
-{
-
-}
-
-void func_child_child_child_child(unsigned int p)
-{
-}
-
-<<<<<<< HEAD
-	printf("Child_cild: %lu\n", t_id);
-
-	for (int i = INT_MAX; i >= 0; --i);
-=======
-void func_child_child_child(unsigned int p)
-{
-}
-
-void func_child_child(unsigned int p)
-{
-	
-}
-
-void func_child(unsigned int p)
-{
->>>>>>> local_branch
-}
 
 void func(unsigned int p)
 {
+
 }
-//////////////////////////////////////////////////////////////////////////////////////
+
 void func_(unsigned int p)
 {
 	tid_t t_id = so_fork(&func, 140);
@@ -60,6 +26,18 @@ void func_(unsigned int p)
 
 	printf("[FUNC_]: Al patrulea apel a lui so_fork a intors: %lu\n", t_id);
 
+	t_id = so_fork(&func, 10);
+
+	printf("[FUNC_]: Al cincilea apel a lui so_fork a intors: %lu\n", t_id);
+
+	t_id = so_fork(&func, 1);
+
+	printf("[FUNC_]: Al saselea apel a lui so_fork a intors: %lu\n", t_id);
+
+	t_id = so_fork(&func, 7);
+
+	printf("[FUNC_]: Al saptelea apel a lui so_fork a intors: %lu\n", t_id);
+
 }
 
 void f2(unsigned int p)
@@ -75,6 +53,22 @@ void f2(unsigned int p)
 	t_id = so_fork(&func, 0);
 
 	printf("[F2]: al treilea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func, 10);
+
+	printf("[F2]: al patrulea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func, 30);
+
+	printf("[F2]: al cincilea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func, 10);
+
+	printf("[F2]: al saptelea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func, 200);
+
+	printf("[F2]: al saptelea apel al lui so_fork a intors %lu\n", t_id);
 }
 
 void f1(unsigned int p)
