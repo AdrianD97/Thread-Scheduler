@@ -64,7 +64,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	return SUCCESS;
 }
 
-static STATE get_current_thread_id(tid_t thread_id)
+static int get_current_thread_id(tid_t thread_id)
 {
 	unsigned int i;
 
@@ -213,6 +213,11 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	pthread_mutex_unlock(&scheduler->mutex_running);
 
 	return thread_id;
+}
+
+void so_exec(void)
+{
+	
 }
 
 void so_end(void)
