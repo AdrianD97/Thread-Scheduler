@@ -1,6 +1,6 @@
 #include "Heap.h"
 
-Heap* createEmptyHeap(int size, int (*compare)(void*, void*))
+Heap* createEmptyHeap(int size)
 {
 	Heap* heap = (Heap*)malloc(sizeof(Heap));
 	if (!heap)
@@ -8,8 +8,8 @@ Heap* createEmptyHeap(int size, int (*compare)(void*, void*))
 
 	heap->size = size;
 	heap->index = 0;
-	heap->compare = compare;
-	heap->arr = (void**)calloc((size + 1), sizeof(void*));
+	heap->compare = compare_pairs;
+	heap->arr = (Node *)malloc((size + 1) * sizeof(Node));
 	if (!heap->arr) {
 		free(heap);
 		return NULL;
@@ -22,7 +22,7 @@ static void pushUp(Heap* heap, int type)
 {
 	int index = heap->index;
 	int parent, result = 0;
-	void* tmp;
+	Node tmp;
 
 	do {
 		parent = index / 2;
@@ -31,7 +31,7 @@ static void pushUp(Heap* heap, int type)
 			break;
 		}
 
-		result = heap->compare(heap->arr[index], heap->arr[parent]);
+		result = heap->compare(&heap->arr[index], &heap->arr[parent]);
 
 		if (type == MIN_HEAP) { // heap is min heap
 			if (result >= 0) {
@@ -54,7 +54,7 @@ static void pushUp(Heap* heap, int type)
 	type = MIN_HEAP -> heap is a min heap
 	type = MAX_HEAP -> heap is a max heap
 */
-void addItemToHeap(Heap* heap, void* value, int type)
+void addItemToHeap(Heap* heap, Node value, int type)
 {
 	if (!heap || (type != MAX_HEAP && type != MIN_HEAP)) {
 		return;
@@ -69,12 +69,12 @@ void addItemToHeap(Heap* heap, void* value, int type)
 	pushUp(heap, type);
 }
 
-void* getHeapRoot(const Heap* heap) {
-	if (heap->index == 0) {
+Node const* getHeapRoot(const Heap* heap) {
+	if (!heap || heap->index == 0) {
 		return NULL;
 	}
 
-	return heap->arr[ROOT];
+	return (Node const *)&heap->arr[ROOT];
 }
 
 static void pushDown(Heap* heap, int type) {
@@ -84,15 +84,15 @@ static void pushDown(Heap* heap, int type) {
 
 	int index = ROOT, result;
 	int child_ind, result_;
-	void* tmp;
+	Node tmp;
 
 	do {
 		if (2 * index <= heap->index) {
 			if (2 * index + 1 > heap->index) {
-				result = heap->compare(heap->arr[index], heap->arr[2 * index]);
+				result = heap->compare(&heap->arr[index], &heap->arr[2 * index]);
 				child_ind = 2 * index;
 			} else {
-				result_ = heap->compare(heap->arr[2 * index], heap->arr[2 * index + 1]);
+				result_ = heap->compare(&heap->arr[2 * index], &heap->arr[2 * index + 1]);
 
 				if (type == MIN_HEAP) { // heap is min heap
 					child_ind = (result_ < 0) ? (2 * index) : (2 * index + 1);
@@ -100,7 +100,7 @@ static void pushDown(Heap* heap, int type) {
 					child_ind = (result_ > 0) ? (2 * index) : (2 * index + 1);
 				}
 
-				result = heap->compare(heap->arr[index], heap->arr[child_ind]);
+				result = heap->compare(&heap->arr[index], &heap->arr[child_ind]);
 			}
 
 			if (type == MIN_HEAP) { // heap is min heap
@@ -128,12 +128,14 @@ static void pushDown(Heap* heap, int type) {
 	type = MIN_HEAP -> heap is a min heap
 	type = MAX_HEAP -> heap is a max heap
 */
-void* removeHeapRoot(Heap* heap, int type) {
+Node removeHeapRoot(Heap* heap, int type) {
+	Node tmp;
+
 	if (!heap || !heap->arr || heap->index == 0 || (type != MAX_HEAP && type != MIN_HEAP)) {
-		return NULL;
+		return tmp;
 	}
 
-	void* tmp = heap->arr[ROOT];
+	tmp = heap->arr[ROOT];
 	heap->arr[ROOT] = heap->arr[heap->index];
 	heap->arr[heap->index] = tmp;
 

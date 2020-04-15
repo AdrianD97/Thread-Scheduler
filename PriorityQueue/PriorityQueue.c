@@ -1,21 +1,21 @@
 #include "PriorityQueue.h"
 
-PriorityQueue* createPriorityQueue(int size, int (*compare)(void*, void*))
+PriorityQueue* createPriorityQueue(int size)
 {
-	return createEmptyHeap(size, compare);
+	return createEmptyHeap(size);
 }
 
-void add(PriorityQueue *priorityQueue, void* value)
+void add(PriorityQueue *priorityQueue, Node value)
 {
 	addItemToHeap(priorityQueue, value, MAX_HEAP);
 }
 
-void* head(const PriorityQueue *priorityQueue)
+Node const* head(const PriorityQueue *priorityQueue)
 {
 	return getHeapRoot(priorityQueue);
 }
 
-void* remove_head(PriorityQueue *priorityQueue)
+Node remove_head(PriorityQueue *priorityQueue)
 {
 	return removeHeapRoot(priorityQueue, MAX_HEAP);
 }

@@ -10,36 +10,103 @@
 #include <limits.h>
 #include "so_scheduler.h"
 
-void func_child_child(unsigned int p)
+void func_child_child_child_child_child(unsigned int p)
 {
 
+}
+
+void func_child_child_child_child(unsigned int p)
+{
+}
+
+<<<<<<< HEAD
+	printf("Child_cild: %lu\n", t_id);
+
+	for (int i = INT_MAX; i >= 0; --i);
+=======
+void func_child_child_child(unsigned int p)
+{
+}
+
+void func_child_child(unsigned int p)
+{
+	
 }
 
 void func_child(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child_child, 2);
-
-	printf("Child_cild: %lu\n", t_id);
-
-	for (int i = INT_MAX; i >= 0; --i);
+>>>>>>> local_branch
 }
 
 void func(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child, 1);
+}
+//////////////////////////////////////////////////////////////////////////////////////
+void func_(unsigned int p)
+{
+	tid_t t_id = so_fork(&func, 140);
 
-	printf("Child: %lu\n", t_id);
+	printf("[FUNC_]: Primul apel a lui so_fork a intors: %lu\n", t_id);
+
+	t_id = so_fork(&func, 10);
+
+	printf("[FUNC_]: Al doilea apel a lui so_fork a intors: %lu\n", t_id);
+
+	t_id = so_fork(&func, 14);
+
+	printf("[FUNC_]: Al treilea apel a lui so_fork a intors: %lu\n", t_id);
+
+	t_id = so_fork(&func, 0);
+
+	printf("[FUNC_]: Al patrulea apel a lui so_fork a intors: %lu\n", t_id);
+
+}
+
+void f2(unsigned int p)
+{
+	tid_t t_id = so_fork(&func_, 10);
+
+	printf("[F2]: primul apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func, 10);
+
+	printf("[F2]: al doilea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func, 0);
+
+	printf("[F2]: al treilea apel al lui so_fork a intors %lu\n", t_id);
+}
+
+void f1(unsigned int p)
+{
+	tid_t t_id = so_fork(&func_, 10);
+
+	printf("[F1]: primul apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func_, 100);
+
+	printf("[F1]: al doilea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func_, 10);
+
+	printf("[F1]: al treilea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&f2, 10);
+
+	printf("[F1]: al patrulea apel al lui so_fork a intors %lu\n", t_id);
+
 }
 
 int main(int argc, char const *argv[])
 {
-	unsigned int q = 10;
+	unsigned int q = 2;
 	unsigned int io = 20;
-	printf("so_init call return %d.\n", so_init(q, io));
 
-	tid_t t_id = so_fork(&func, 10);
+	so_init(q, io);
 
-	printf("parent: %lu\n", t_id);
+	tid_t t_id = so_fork(&f1, 10);
+
+	printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
 
 	so_end();
 	return 0;
