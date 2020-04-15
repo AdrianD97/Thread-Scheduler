@@ -84,6 +84,7 @@ static void* thread_func(void *arg)
 	th_func_arg arg_th_func;
 
 	arg_th_func = *(th_func_arg *)arg;
+	free(arg);
 	node = arg_th_func.node;
 
 	scheduler->threads[node.index].thread_id = pthread_self();
@@ -122,7 +123,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	tid_t thread_id;
 	Node node, pr_preempted;
 	Node const *pr;
-	th_func_arg arg;
+	th_func_arg *arg;
 	int preempted;
 	unsigned int thread_index, index;
 
@@ -131,7 +132,12 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	if (!func)
 		return INVALID_TID;
 
-	arg.func = func;
+	arg = (th_func_arg *)malloc(sizeof(th_func_arg));
+	if (!arg) {
+		return INVALID_TID;
+	}
+
+	arg->func = func;
 
 	pthread_mutex_lock(&scheduler->mutex_running);
 	if (scheduler->start != NOT_YET) {
@@ -156,9 +162,9 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	scheduler->threads[node.index].state = READY;
 	add(scheduler->ready_queue, node);
 
-	arg.node = node;
+	arg->node = node;
 
-	ret = pthread_create(&thread_id, NULL, thread_func, (void *)&arg);
+	ret = pthread_create(&thread_id, NULL, thread_func, (void *)arg);
 	if (ret)
 		return INVALID_TID;
 
