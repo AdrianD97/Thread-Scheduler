@@ -92,7 +92,9 @@ static void* thread_func(void *arg)
 	while (scheduler->threads[node.index].state != RUNNING) {
 		pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
 	}
+
 	arg_th_func.func(node.priority);
+
 	if (scheduler->threads[node.index].preempted == PREEMPTED) {
 		pthread_mutex_lock(&scheduler->mutex_running);
 		while (scheduler->threads[node.index].state != RUNNING) {
