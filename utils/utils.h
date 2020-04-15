@@ -14,6 +14,9 @@
 #define PREEMPTED 		1
 #define NO_PREEMPTED	0
 
+#define START 	1
+#define NOT_YET	0
+
 typedef enum {
 	NEW,
 	READY,
@@ -40,7 +43,7 @@ typedef struct {
 	unsigned int nr_threads;
 	unsigned int time_quantum;
 	unsigned int nr_events;
-	unsigned int current_thread; /* index in array-ul de thread-uri */
+	unsigned int start;
 	unsigned int timestamp;
 	thread_t *threads;
 	PriorityQueue *ready_queue;
@@ -52,9 +55,7 @@ typedef struct {
 	ca noul copil a intrat in READY/RUNNING
 	*/
 	pthread_cond_t cond_running;
-	pthread_cond_t cond_parent_child;
 	pthread_mutex_t mutex_running;
-	pthread_mutex_t mutex_parent_child;
 } scheduler_t;
 
 #endif // UTILS_H

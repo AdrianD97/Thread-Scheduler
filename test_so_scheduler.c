@@ -16,276 +16,58 @@ void func_child_child_child_child_child(unsigned int p)
 
 void func_child_child_child_child(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 20);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 20);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 20);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 101);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 0);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 203);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 0);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 20);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 20);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 20);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 101);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 0);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 203);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 0);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child_child, 110);
-
-	// printf("Child_child_child_child_child_child: %lu\n", t_id);
 }
 
 void func_child_child_child(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child_child_child_child, 10);
-
-	// printf("Child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child, 11);
-
-	// printf("Child_child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child_child, 19);
-
-	// printf("Child_child_child_child_child: %lu\n", t_id);
 }
 
 void func_child_child(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child_child_child, 1);
-
-	// printf("Child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child, 14);
-
-	// printf("Child_child_child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child_child, 0);
-
-	// printf("Child_child_child_child: %lu\n", t_id);
+	
 }
 
 void func_child(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child_child, 2);
-
-	// printf("Child_child_child: %lu\n", t_id);
 }
 
 void func(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_child, 1);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 1);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 18);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 1);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 18);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 1);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 18);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 1);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 18);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 1);
-
-	// printf("Child_child: %lu\n", t_id);
-
-	t_id = so_fork(&func_child_child, 18);
-
-	// printf("Child_child: %lu\n", t_id);
 }
 //////////////////////////////////////////////////////////////////////////////////////
 void func_(unsigned int p)
 {
-	// tid_t t_id = so_fork(&func, 10);
+	tid_t t_id = so_fork(&func, 140);
 
-	// // printf("Child_child: %lu\n", t_id);
+	printf("[FUNC_]: Primul apel a lui so_fork a intors: %lu\n", t_id);
 
-	// t_id = so_fork(&func_child, 10);
+	t_id = so_fork(&func, 10);
 
-	// // printf("Child_child: %lu\n", t_id);
+	printf("[FUNC_]: Al doilea apel a lui so_fork a intors: %lu\n", t_id);
 
-	// t_id = so_fork(&func_child, 1);
+	t_id = so_fork(&func, 14);
 
-	// // printf("Child_child: %lu\n", t_id);
+	printf("[FUNC_]: Al treilea apel a lui so_fork a intors: %lu\n", t_id);
 
-	//  t_id = so_fork(&func_child, 10);
+	t_id = so_fork(&func, 0);
 
-	// // printf("Child_child: %lu\n", t_id);
+	printf("[FUNC_]: Al patrulea apel a lui so_fork a intors: %lu\n", t_id);
 
-	// t_id = so_fork(&func_child, 109);
+}
 
-	// // printf("Child_child: %lu\n", t_id);
+void f2(unsigned int p)
+{
+	tid_t t_id = so_fork(&func_, 10);
 
-	// t_id = so_fork(&func_child, 108);
+	printf("[F2]: primul apel al lui so_fork a intors %lu\n", t_id);
 
-	// // printf("Child_child: %lu\n", t_id);
+	t_id = so_fork(&func, 10);
+
+	printf("[F2]: al doilea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&func, 0);
+
+	printf("[F2]: al treilea apel al lui so_fork a intors %lu\n", t_id);
 }
 
 void f1(unsigned int p)
@@ -294,38 +76,18 @@ void f1(unsigned int p)
 
 	printf("[F1]: primul apel al lui so_fork a intors %lu\n", t_id);
 
-	t_id = so_fork(&func_, 10);
+	t_id = so_fork(&func_, 100);
 
 	printf("[F1]: al doilea apel al lui so_fork a intors %lu\n", t_id);
 
-	// t_id = so_fork(&func_, 16);
+	t_id = so_fork(&func_, 10);
 
-	// // printf("Child_child: %lu\n", t_id);
+	printf("[F1]: al treilea apel al lui so_fork a intors %lu\n", t_id);
 
-	// t_id = so_fork(&func_, 1);
+	t_id = so_fork(&f2, 10);
 
-	// // printf("Child_child: %lu\n", t_id);
+	printf("[F1]: al patrulea apel al lui so_fork a intors %lu\n", t_id);
 
-	// t_id = so_fork(&func_, 104);
-
-	// // printf("Child_child: %lu\n", t_id);
-
-	// t_id = so_fork(&func_, 120);
-
-	// // printf("Child_child: %lu\n", t_id);
-
-	// t_id = so_fork(&func_, 0);
-
-	// // printf("Child_child: %lu\n", t_id);
-
-	// t_id = so_fork(&func_, 104);
-
-	// // printf("Child_child: %lu\n", t_id);
-}
-
-void f2(unsigned int p)
-{
-	
 }
 
 int main(int argc, char const *argv[])
