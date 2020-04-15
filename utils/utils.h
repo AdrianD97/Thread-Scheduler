@@ -7,9 +7,12 @@
 
 #define SUCCESS	0
 #define ERROR	(-1)
-#define MAX_THREADS	1000
+#define MAX_THREADS	10000
 #define INVALID_INDEX	(-1)
 #define INVALID_EVENT	(-1)
+
+#define PREEMPTED 		1
+#define NO_PREEMPTED	0
 
 typedef enum {
 	NEW,
@@ -20,10 +23,16 @@ typedef enum {
 } STATE;
 
 typedef struct {
+	so_handler *func;
+	Node node;
+} th_func_arg;
+
+typedef struct {
 	unsigned int priority;
-	unsigned int current_time_quantum;
+	int current_time_quantum;
 	STATE state;
 	unsigned int event;
+	unsigned char preempted;
 	pthread_t thread_id;
 } thread_t;
 
