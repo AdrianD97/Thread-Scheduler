@@ -31,6 +31,10 @@ void func_(unsigned int p)
 
 	printf("[FUNC_]: Al patrulea apel a lui so_fork a intors: %lu\n", t_id);
 
+	so_exec();
+
+	so_exec();
+
 	t_id = so_fork(&func, 10);
 
 	printf("[FUNC_]: Al cincilea apel a lui so_fork a intors: %lu\n", t_id);
@@ -39,9 +43,25 @@ void func_(unsigned int p)
 
 	printf("[FUNC_]: Al saselea apel a lui so_fork a intors: %lu\n", t_id);
 
+	so_exec();
+
+	so_exec();
+
+	so_exec();
+
+	so_exec();
+
 	t_id = so_fork(&func, 7);
 
 	printf("[FUNC_]: Al saptelea apel a lui so_fork a intors: %lu\n", t_id);
+
+	so_exec();
+
+	so_exec();
+
+	so_exec();
+
+	so_exec();
 
 }
 
@@ -86,17 +106,21 @@ void f1(unsigned int p)
 
 	so_exec();
 
-	// t_id = so_fork(&func_, 100);
+	so_exec();
 
-	// printf("[F1]: al doilea apel al lui so_fork a intors %lu\n", t_id);
+	so_exec();
 
-	// t_id = so_fork(&func_, 10);
+	t_id = so_fork(&func_, 100);
 
-	// printf("[F1]: al treilea apel al lui so_fork a intors %lu\n", t_id);
+	printf("[F1]: al doilea apel al lui so_fork a intors %lu\n", t_id);
 
-	// t_id = so_fork(&f2, 10);
+	t_id = so_fork(&func_, 10);
 
-	// printf("[F1]: al patrulea apel al lui so_fork a intors %lu\n", t_id);
+	printf("[F1]: al treilea apel al lui so_fork a intors %lu\n", t_id);
+
+	t_id = so_fork(&f2, 10);
+
+	printf("[F1]: al patrulea apel al lui so_fork a intors %lu\n", t_id);
 
 }
 

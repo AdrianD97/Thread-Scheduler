@@ -11,7 +11,7 @@ static pthread_mutexattr_t attr;
 
 int so_init(unsigned int time_quantum, unsigned int io)
 {
-	int ret;
+	int ret1, ret2;
 
 	if (io >= SO_MAX_NUM_EVENTS)
 		return ERROR;
@@ -23,7 +23,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	scheduler->nr_threads = scheduler->timestamp = 0;
 	scheduler->time_quantum = time_quantum;
 	scheduler->nr_events = io;
-	scheduler->start = NOT_YET;
+	scheduler->state = NOT_YET;
 	
 	scheduler->threads = (thread_t *)malloc(MAX_THREADS * sizeof(thread_t));
 	if (!scheduler->threads) {
@@ -38,25 +38,37 @@ int so_init(unsigned int time_quantum, unsigned int io)
 		return ERROR;
 	}
 
-	ret = pthread_cond_init(&scheduler->cond_running, NULL);
-	if (ret) {
+	ret1 = pthread_cond_init(&scheduler->cond_running, NULL);
+	ret2 = pthread_cond_init(&scheduler->cond_end, NULL);
+	if (ret1 | ret2) {
 		destroy(scheduler->ready_queue);
 		free(scheduler->ready_queue);
 		free(scheduler->threads);
+
+		if (ret1 && !ret2)
+			pthread_cond_destroy(&scheduler->cond_end);
+		if (ret2 && !ret1)
+			pthread_cond_destroy(&scheduler->cond_running);
+
 		free(scheduler);
 		return ERROR;
 	}
 
 	pthread_mutexattr_init(&attr);
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-
-	ret = pthread_mutex_init(&scheduler->mutex_running, &attr);
-
-	if (ret) {
+	ret1 = pthread_mutex_init(&scheduler->mutex_running, &attr);
+	pthread_mutex_init(&scheduler->mutex_end, NULL);
+	if (ret1 | ret2) {
 		destroy(scheduler->ready_queue);
 		free(scheduler->ready_queue);
 		free(scheduler->threads);
 		pthread_cond_destroy(&scheduler->cond_running);
+		pthread_cond_destroy(&scheduler->cond_end);
+
+		if (ret1 && !ret2)
+			pthread_mutex_destroy(&scheduler->mutex_end);
+		if (ret2 && !ret1)
+			pthread_mutex_destroy(&scheduler->mutex_running);
 		free(scheduler);
 		return ERROR;
 	}
@@ -64,13 +76,12 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	return SUCCESS;
 }
 
-static int get_current_thread_id(tid_t thread_id)
+static int get_current_thread_index(tid_t thread_id)
 {
 	unsigned int i;
 
 	for (i = 0; i < scheduler->nr_threads; ++i) {
-		if (scheduler->threads[i].thread_id == thread_id
-			&& scheduler->threads[i].state != TERMINATED) {
+		if (scheduler->threads[i].thread_id == thread_id) {
 			return i;
 		}
 	}
@@ -112,9 +123,13 @@ static void* thread_func(void *arg)
 	if (pr) {
 		printf("Thred %d zice ca next is %d.\n", node.index, pr->index);
 		scheduler->threads[pr->index].state = RUNNING;
-		// pthread_cond_broadcast(&scheduler->cond_running);
+		pthread_cond_broadcast(&scheduler->cond_running);
+	} else {
+		pthread_mutex_lock(&scheduler->mutex_end);
+		scheduler->state = END;
+		pthread_cond_broadcast(&scheduler->cond_end);
+		pthread_mutex_unlock(&scheduler->mutex_end);
 	}
-	pthread_cond_broadcast(&scheduler->cond_running);
 	pthread_mutex_unlock(&scheduler->mutex_running);
 
 	printf("Thred %d m-am terminat.\n", node.index);
@@ -144,8 +159,8 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	arg->func = func;
 
 	pthread_mutex_lock(&scheduler->mutex_running);
-	if (scheduler->start != NOT_YET) {
-		thread_index = get_current_thread_id(pthread_self());
+	if (scheduler->state != NOT_YET) {
+		thread_index = get_current_thread_index(pthread_self());
 		if (thread_index == INVALID_INDEX) {
 			pthread_mutex_unlock(&scheduler->mutex_running);
 			return INVALID_TID;
@@ -172,7 +187,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		return INVALID_TID;
 	}
 
-	if (scheduler->start != NOT_YET) {
+	if (scheduler->state != NOT_YET) {
 		if (node.priority > scheduler->threads[thread_index].priority) {
 			preempted = 1;
 			index = node.index;
@@ -218,7 +233,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 			}
 		}
 	} else {
-		scheduler->start = START;
+		scheduler->state = START;
 		scheduler->threads[node.index].state = RUNNING;
 	}
 
@@ -235,7 +250,7 @@ void so_exec(void)
 	Node const *pr;
 
 	pthread_mutex_lock(&scheduler->mutex_running);
-	thread_index = get_current_thread_id(pthread_self());
+	thread_index = get_current_thread_index(pthread_self());
 	if (thread_index == INVALID_INDEX)
 		return;
 	printf("Thred %d face so_exec.\n", thread_index);
@@ -286,6 +301,12 @@ void so_end(void)
 	if (!scheduler)
 		return;
 
+	pthread_mutex_lock(&scheduler->mutex_end);
+	while (scheduler->state != END) {
+		pthread_cond_wait(&scheduler->cond_end, &scheduler->mutex_end);
+	}
+	pthread_mutex_unlock(&scheduler->mutex_end);
+
 	for (int i = 0; i < scheduler->nr_threads; ++i) {
 		pthread_join(scheduler->threads[i].thread_id, NULL);
 	}
@@ -295,6 +316,9 @@ void so_end(void)
 	free(scheduler->threads);
 	pthread_cond_destroy(&scheduler->cond_running);
 	pthread_mutex_destroy(&scheduler->mutex_running);
+	pthread_cond_destroy(&scheduler->cond_end);
+	pthread_mutex_destroy(&scheduler->mutex_end);
+
 	free(scheduler);
 	scheduler = NULL;
 }

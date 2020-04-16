@@ -14,9 +14,6 @@
 #define PREEMPTED 		1
 #define NO_PREEMPTED	0
 
-#define START 	1
-#define NOT_YET	0
-
 typedef enum {
 	NEW,
 	READY,
@@ -24,6 +21,12 @@ typedef enum {
 	WAITING,
 	TERMINATED
 } STATE;
+
+typedef enum {
+	NOT_YET,
+	START,
+	END
+} SCH_STATE;
 
 typedef struct {
 	so_handler *func;
@@ -43,7 +46,7 @@ typedef struct {
 	unsigned int nr_threads;
 	unsigned int time_quantum;
 	unsigned int nr_events;
-	unsigned int start;
+	unsigned int state;
 	unsigned int timestamp;
 	thread_t *threads;
 	PriorityQueue *ready_queue;
@@ -56,6 +59,9 @@ typedef struct {
 	*/
 	pthread_cond_t cond_running;
 	pthread_mutex_t mutex_running;
+
+	pthread_cond_t cond_end;
+	pthread_mutex_t mutex_end;
 } scheduler_t;
 
 #endif // UTILS_H
