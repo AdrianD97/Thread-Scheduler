@@ -2,9 +2,6 @@
 #include <stdio.h>
 /* TODO: End of testing code */
 
-/* TODO: Sa nu uit sa verific ca daca prioritatea la so_fork este mai mare decat 5
-va trebui sa intorc INVALID_TID
-*/
 #include "so_scheduler.h"
 #include "utils/utils.h"
 
@@ -79,27 +76,6 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	return SUCCESS;
 }
 
-static int get_current_thread_index(tid_t thread_id)
-{
-	unsigned int left, right;
-
-	left = 0;
-	right = scheduler->nr_threads - 1;
-
-	while (left <= right) {
-		if (scheduler->threads[left].thread_id == thread_id)
-			return left;
-
-		if (scheduler->threads[right].thread_id == thread_id)
-			return right;
-
-		++left;
-		--right;
-	}
-
-	return INVALID_INDEX;
-}
-
 static void* thread_func(void *arg)
 {
 	Node node;
@@ -170,11 +146,12 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 
 	pthread_mutex_lock(&scheduler->mutex_running);
 	if (scheduler->state != NOT_YET) {
-		thread_index = get_current_thread_index(pthread_self());
-		if (thread_index == INVALID_INDEX) {
+		pr = head(scheduler->ready_queue);
+		if (!pr) {
 			pthread_mutex_unlock(&scheduler->mutex_running);
 			return INVALID_TID;
 		}
+		thread_index = pr->index;
 		printf("Thred %d face so_fork.\n", thread_index);
 	}
 
@@ -261,11 +238,12 @@ void so_exec(void)
 	Node const *pr;
 
 	pthread_mutex_lock(&scheduler->mutex_running);
-	thread_index = get_current_thread_index(pthread_self());
-	if (thread_index == INVALID_INDEX) {
+	pr = head(scheduler->ready_queue);
+	if (!pr) {
 		pthread_mutex_unlock(&scheduler->mutex_running);
 		return;
 	}
+	thread_index = pr->index;
 	printf("Thred %d face so_exec.\n", thread_index);
 
 	q = --scheduler->threads[thread_index].current_time_quantum;
@@ -317,10 +295,6 @@ void so_exec(void)
 	Inca o problema, daca operatia a esuat, tot va trebui sa contorizez
 	aceasta operatie, pentru ca a fost facuta sau NU, habar nu am.
 */
-/*
- TODO: Indexul thread-ului il pot afla foarte simplu interogand head-ul cozii.
- DECI NU VOI MAI AVEA NEVOIE DE ACEL MUTEX END SI CONDITIE END.
-*/
 int so_wait(unsigned int io)
 {
 	int thread_index;
@@ -342,11 +316,12 @@ int so_wait(unsigned int io)
 	3. il blochez.
 	1. trebuie sa si scad cuanta
 	*/
-	thread_index = get_current_thread_index(pthread_self());
-	if (thread_index == INVALID_INDEX) {
+	pr = head(scheduler->ready_queue);
+	if (!pr) {
 		pthread_mutex_unlock(&scheduler->mutex_running);
 		return ERROR;
 	}
+	thread_index = pr->index;
 	printf("Thred %d face so_wait.\n", thread_index);
 
 

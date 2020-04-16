@@ -410,7 +410,7 @@ int main(int argc, char const *argv[])
 		return -1;
 	}
 
-	tid_t t_id = so_fork(&f1, 5);
+	tid_t t_id = so_fork(&f1, 4);
 
 	printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
 
