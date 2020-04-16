@@ -37,7 +37,7 @@ typedef struct {
 	unsigned int priority;
 	int current_time_quantum;
 	STATE state;
-	unsigned int event;
+	int event;
 	unsigned char preempted;
 	pthread_t thread_id;
 } thread_t;

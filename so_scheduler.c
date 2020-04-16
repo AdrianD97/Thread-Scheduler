@@ -292,13 +292,16 @@ void so_exec(void)
 	Nu cred ca va trebui sa se faca wait in functii, si doar schimb
 	starea, dar nu cred ca va merge ?? Trebuie sa rumegam un pic asta.
 
-	Inca o problema, daca operatia a esuat, tot va trebui sa contorizez
+	TODO: Inca o problema, daca operatia a esuat, tot va trebui sa contorizez
 	aceasta operatie, pentru ca a fost facuta sau NU, habar nu am.
+	daca iau asta in considerare, atunci va trebui sa pastrez chestiile cu
+	verififcare preemptare si sa imi marchez un flag cu ERROARE sau SUCCES si
+	voi intoarce flag-ul la sfarsit.
 */
 int so_wait(unsigned int io)
 {
 	int thread_index;
-	Node pr_preempted;
+	Node pr_wait;
 	Node const *pr;
 
 	pthread_mutex_lock(&scheduler->mutex_running);
@@ -307,27 +310,140 @@ int so_wait(unsigned int io)
 		return ERROR;
 	}
 
-	/*
-	1. va trebui sa marchez ca fiind in waiting, il sterg din coada
-	2. aleg head-ul cozii si il pun ca noul running
-	3. la fel va trebui sa verific daca a fost inaite preeptata sau nu
-	ca sa mai dau inca un unlock(cel din handler)
-	2. ii schimb cuanta.
-	3. il blochez.
-	1. trebuie sa si scad cuanta
-	*/
-	pr = head(scheduler->ready_queue);
-	if (!pr) {
-		pthread_mutex_unlock(&scheduler->mutex_running);
-		return ERROR;
-	}
-	thread_index = pr->index;
+	pr_wait = remove_head(scheduler->ready_queue);
+	thread_index = pr_wait.index;
 	printf("Thred %d face so_wait.\n", thread_index);
 
+	pr = head(scheduler->ready_queue);
+	if (pr) {
+		scheduler->threads[pr->index].current_time_quantum = scheduler->time_quantum;
+		scheduler->threads[pr->index].state = RUNNING;
+	}
+	scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
+	scheduler->threads[thread_index].state = WAITING;
+	scheduler->threads[thread_index].event = io;
 
+	pthread_cond_broadcast(&scheduler->cond_running);
+	if (scheduler->threads[thread_index].preempted == NO_PREEMPTED) {
+		scheduler->threads[thread_index].preempted = PREEMPTED;
+		pthread_mutex_unlock(&scheduler->mutex_running);
+	}
+
+	while (scheduler->threads[thread_index].state != RUNNING) {
+		// printf("[SO_WAIT]: Thred %d sta si asteapta dupa RUNNING\n", thread_index);
+		pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
+	}
 	pthread_mutex_unlock(&scheduler->mutex_running);
 
 	return SUCCESS;
+}
+
+static void change(unsigned int thread_index)
+{
+	Node node;
+
+	node.index = thread_index;
+	node.priority = scheduler->threads[thread_index].priority;
+	node.timestamp = scheduler->timestamp++;
+	scheduler->threads[thread_index].state = READY;
+	scheduler->threads[thread_index].event = INVALID_EVENT;
+
+	add(scheduler->ready_queue, node);
+}
+
+static unsigned int wake_up(unsigned int event)
+{
+	int left, right;
+	unsigned int nr_wake_up_threads = 0;
+
+	left = 0;
+	right = scheduler->nr_threads - 1;
+	while (left < right) {
+		if (scheduler->threads[left].state == WAITING
+			&& scheduler->threads[left].event == event) {
+			++nr_wake_up_threads;
+			change(left);
+		}
+
+		if (scheduler->threads[right].state == WAITING
+			&& scheduler->threads[right].event == event) {
+			++nr_wake_up_threads;
+			change(right);
+		}
+
+		++left;
+		--right;
+	}
+
+	if (left == right && scheduler->threads[right].state == WAITING
+		&& scheduler->threads[right].event == event) {
+		++nr_wake_up_threads;
+		change(left);
+	}
+
+	return nr_wake_up_threads;
+}
+
+int so_signal(unsigned int io)
+{
+	int nr_wake_up_threads, preempted, q;
+	Node node;
+	Node const *pr;
+	unsigned int thread_index;
+
+	preempted = 0;
+	pthread_mutex_lock(&scheduler->mutex_running);
+	if (io >= scheduler->nr_events) {
+		pthread_mutex_unlock(&scheduler->mutex_running);
+		return ERROR;
+	}
+
+	node = remove_head(scheduler->ready_queue);
+	thread_index = node.index;
+	nr_wake_up_threads = wake_up(io);
+	printf("Thred %d face so_signal si atrezit %d.\n", thread_index, nr_wake_up_threads);
+
+	pr = head(scheduler->ready_queue);
+	if (pr) {
+		if (pr->priority > scheduler->threads[thread_index].priority)
+			preempted = 1;
+	}
+
+	q = --scheduler->threads[thread_index].current_time_quantum;
+	if (!preempted && (q == 0)) {
+		if (pr && pr->priority == scheduler->threads[thread_index].priority)
+			preempted = 1;
+
+		if (!preempted)
+			scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
+	}
+
+	if (preempted) {
+		node.timestamp = scheduler->timestamp++;
+		add(scheduler->ready_queue, node);
+
+		scheduler->threads[thread_index].state = READY;
+		scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
+
+		scheduler->threads[pr->index].current_time_quantum = scheduler->time_quantum;
+		scheduler->threads[pr->index].state = RUNNING;
+
+		pthread_cond_broadcast(&scheduler->cond_running);
+		if (scheduler->threads[thread_index].preempted == NO_PREEMPTED) {
+			scheduler->threads[thread_index].preempted = PREEMPTED;
+			pthread_mutex_unlock(&scheduler->mutex_running);
+		}
+
+		while (scheduler->threads[thread_index].state != RUNNING) {
+			// printf("[SO_EXEC]: Thred %d sta si asteapta dupa RUNNING\n", thread_index);
+			pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
+		}
+	} else
+		add(scheduler->ready_queue, node);
+
+	pthread_mutex_unlock(&scheduler->mutex_running);
+
+	return nr_wake_up_threads;
 }
 
 void so_end(void)
