@@ -5,11 +5,16 @@
 
 void func(unsigned int p)
 {
+	so_exec();
 
+	so_exec();
 }
 
 void func_(unsigned int p)
 {
+	so_exec();
+
+	so_exec();
 	tid_t t_id = so_fork(&func, 140);
 
 	printf("[FUNC_]: Primul apel a lui so_fork a intors: %lu\n", t_id);
@@ -77,23 +82,27 @@ void f1(unsigned int p)
 
 	printf("[F1]: primul apel al lui so_fork a intors %lu\n", t_id);
 
-	t_id = so_fork(&func_, 100);
+	so_exec();
 
-	printf("[F1]: al doilea apel al lui so_fork a intors %lu\n", t_id);
+	so_exec();
 
-	t_id = so_fork(&func_, 10);
+	// t_id = so_fork(&func_, 100);
 
-	printf("[F1]: al treilea apel al lui so_fork a intors %lu\n", t_id);
+	// printf("[F1]: al doilea apel al lui so_fork a intors %lu\n", t_id);
 
-	t_id = so_fork(&f2, 10);
+	// t_id = so_fork(&func_, 10);
 
-	printf("[F1]: al patrulea apel al lui so_fork a intors %lu\n", t_id);
+	// printf("[F1]: al treilea apel al lui so_fork a intors %lu\n", t_id);
+
+	// t_id = so_fork(&f2, 10);
+
+	// printf("[F1]: al patrulea apel al lui so_fork a intors %lu\n", t_id);
 
 }
 
 int main(int argc, char const *argv[])
 {
-	unsigned int q = 2;
+	unsigned int q = 10;
 	unsigned int io = 20;
 
 	so_init(q, io);

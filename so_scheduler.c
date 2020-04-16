@@ -69,7 +69,8 @@ static int get_current_thread_id(tid_t thread_id)
 	unsigned int i;
 
 	for (i = 0; i < scheduler->nr_threads; ++i) {
-		if (scheduler->threads[i].thread_id == thread_id) {
+		if (scheduler->threads[i].thread_id == thread_id
+			&& scheduler->threads[i].state != TERMINATED) {
 			return i;
 		}
 	}
@@ -109,11 +110,14 @@ static void* thread_func(void *arg)
 
 	pr = head(scheduler->ready_queue);
 	if (pr) {
+		printf("Thred %d zice ca next is %d.\n", node.index, pr->index);
 		scheduler->threads[pr->index].state = RUNNING;
-		pthread_cond_broadcast(&scheduler->cond_running);
+		// pthread_cond_broadcast(&scheduler->cond_running);
 	}
+	pthread_cond_broadcast(&scheduler->cond_running);
 	pthread_mutex_unlock(&scheduler->mutex_running);
 
+	printf("Thred %d m-am terminat.\n", node.index);
 	return NULL;
 }
 
@@ -142,11 +146,9 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	pthread_mutex_lock(&scheduler->mutex_running);
 	if (scheduler->start != NOT_YET) {
 		thread_index = get_current_thread_id(pthread_self());
-		if (thread_index == INVALID_INDEX)
+		if (thread_index == INVALID_INDEX) {
+			pthread_mutex_unlock(&scheduler->mutex_running);
 			return INVALID_TID;
-
-		while (scheduler->threads[thread_index].state != RUNNING) {
-			pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
 		}
 	}
 
@@ -165,8 +167,10 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	arg->node = node;
 
 	ret = pthread_create(&thread_id, NULL, thread_func, (void *)arg);
-	if (ret)
+	if (ret) {
+		pthread_mutex_unlock(&scheduler->mutex_running);
 		return INVALID_TID;
+	}
 
 	if (scheduler->start != NOT_YET) {
 		if (node.priority > scheduler->threads[thread_index].priority) {
@@ -191,7 +195,6 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		}
 
 		if (preempted) {
-			scheduler->threads[thread_index].preempted = PREEMPTED;
 			pr_preempted = remove_head(scheduler->ready_queue);
 			pr_preempted.timestamp = scheduler->timestamp++;
 			add(scheduler->ready_queue, pr_preempted);
@@ -203,7 +206,16 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 			scheduler->threads[index].state = RUNNING;
 
 			pthread_cond_broadcast(&scheduler->cond_running);
-			pthread_mutex_unlock(&scheduler->mutex_running);
+			if (scheduler->threads[thread_index].preempted == NO_PREEMPTED) {
+				scheduler->threads[thread_index].preempted = PREEMPTED;
+				pthread_mutex_unlock(&scheduler->mutex_running);
+			}
+
+			while (scheduler->threads[thread_index].state != RUNNING) {
+				printf("[SO_FORK]: Thred %d stau in so_fork si astept pt ca %d este acum.\n",
+					thread_index, index);
+				pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
+			}
 		}
 	} else {
 		scheduler->start = START;
@@ -217,7 +229,56 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 
 void so_exec(void)
 {
-	
+	int thread_index, q;
+	unsigned int preempted = 0;
+	Node pr_preempted;
+	Node const *pr;
+
+	pthread_mutex_lock(&scheduler->mutex_running);
+	thread_index = get_current_thread_id(pthread_self());
+	if (thread_index == INVALID_INDEX)
+		return;
+	printf("Thred %d face so_exec.\n", thread_index);
+
+	q = --scheduler->threads[thread_index].current_time_quantum;
+	if (q == 0) {
+		printf("Thred %d mi-a expireat cuanta\n", thread_index);
+		pr_preempted = remove_head(scheduler->ready_queue);
+		pr = head(scheduler->ready_queue);
+		if (pr) {
+			if (pr->priority >= pr_preempted.priority)
+				preempted = 1;
+		}
+
+		if (!preempted)
+			scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
+		add(scheduler->ready_queue, pr_preempted);
+	}
+
+	if (preempted) {
+		pr_preempted = remove_head(scheduler->ready_queue);
+		pr_preempted.timestamp = scheduler->timestamp++;
+		add(scheduler->ready_queue, pr_preempted);
+
+		scheduler->threads[thread_index].state = READY;
+		scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
+
+		scheduler->threads[pr->index].current_time_quantum = scheduler->time_quantum;
+		scheduler->threads[pr->index].state = RUNNING;
+		printf("Ma inlocuieste %d\n", pr->index);
+
+		pthread_cond_broadcast(&scheduler->cond_running);
+		if (scheduler->threads[thread_index].preempted == NO_PREEMPTED) {
+			scheduler->threads[thread_index].preempted = PREEMPTED;
+			pthread_mutex_unlock(&scheduler->mutex_running);
+		}
+
+		while (scheduler->threads[thread_index].state != RUNNING) {
+			printf("[SO_EXEC]: Thred %d sta si asteapta dupa RUNNING\n", thread_index);
+			pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
+		}
+	}
+	pthread_mutex_unlock(&scheduler->mutex_running);
 }
 
 void so_end(void)
