@@ -2,6 +2,9 @@
 #include <stdio.h>
 /* TODO: End of testing code */
 
+/* TODO: Sa nu uit sa verific ca daca prioritatea la so_fork este mai mare decat 5
+va trebui sa intorc INVALID_TID
+*/
 #include "so_scheduler.h"
 #include "utils/utils.h"
 
@@ -78,12 +81,20 @@ int so_init(unsigned int time_quantum, unsigned int io)
 
 static int get_current_thread_index(tid_t thread_id)
 {
-	unsigned int i;
+	unsigned int left, right;
 
-	for (i = 0; i < scheduler->nr_threads; ++i) {
-		if (scheduler->threads[i].thread_id == thread_id) {
-			return i;
-		}
+	left = 0;
+	right = scheduler->nr_threads - 1;
+
+	while (left <= right) {
+		if (scheduler->threads[left].thread_id == thread_id)
+			return left;
+
+		if (scheduler->threads[right].thread_id == thread_id)
+			return right;
+
+		++left;
+		--right;
 	}
 
 	return INVALID_INDEX;
@@ -121,7 +132,7 @@ static void* thread_func(void *arg)
 
 	pr = head(scheduler->ready_queue);
 	if (pr) {
-		printf("Thred %d zice ca next is %d.\n", node.index, pr->index);
+		// printf("Thred %d zice ca next is %d.\n", node.index, pr->index);
 		scheduler->threads[pr->index].state = RUNNING;
 		pthread_cond_broadcast(&scheduler->cond_running);
 	} else {
@@ -130,9 +141,9 @@ static void* thread_func(void *arg)
 		pthread_cond_broadcast(&scheduler->cond_end);
 		pthread_mutex_unlock(&scheduler->mutex_end);
 	}
+	printf("Thred %d m-am terminat.\n", node.index);
 	pthread_mutex_unlock(&scheduler->mutex_running);
 
-	printf("Thred %d m-am terminat.\n", node.index);
 	return NULL;
 }
 
@@ -148,13 +159,12 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 
 	preempted = 0;
 
-	if (!func)
+	if (!func || (priority > SO_MAX_PRIO))
 		return INVALID_TID;
 
 	arg = (th_func_arg *)malloc(sizeof(th_func_arg));
-	if (!arg) {
+	if (!arg)
 		return INVALID_TID;
-	}
 
 	arg->func = func;
 
@@ -165,6 +175,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 			pthread_mutex_unlock(&scheduler->mutex_running);
 			return INVALID_TID;
 		}
+		printf("Thred %d face so_fork.\n", thread_index);
 	}
 
 	node.index = scheduler->nr_threads++;
@@ -227,8 +238,8 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 			}
 
 			while (scheduler->threads[thread_index].state != RUNNING) {
-				printf("[SO_FORK]: Thred %d stau in so_fork si astept pt ca %d este acum.\n",
-					thread_index, index);
+				// printf("[SO_FORK]: Thred %d stau in so_fork si astept pt ca %d este acum.\n",
+					// thread_index, index);
 				pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
 			}
 		}
@@ -251,13 +262,15 @@ void so_exec(void)
 
 	pthread_mutex_lock(&scheduler->mutex_running);
 	thread_index = get_current_thread_index(pthread_self());
-	if (thread_index == INVALID_INDEX)
+	if (thread_index == INVALID_INDEX) {
+		pthread_mutex_unlock(&scheduler->mutex_running);
 		return;
+	}
 	printf("Thred %d face so_exec.\n", thread_index);
 
 	q = --scheduler->threads[thread_index].current_time_quantum;
 	if (q == 0) {
-		printf("Thred %d mi-a expireat cuanta\n", thread_index);
+		// printf("Thred %d mi-a expireat cuanta\n", thread_index);
 		pr_preempted = remove_head(scheduler->ready_queue);
 		pr = head(scheduler->ready_queue);
 		if (pr) {
@@ -280,7 +293,7 @@ void so_exec(void)
 
 		scheduler->threads[pr->index].current_time_quantum = scheduler->time_quantum;
 		scheduler->threads[pr->index].state = RUNNING;
-		printf("Ma inlocuieste %d\n", pr->index);
+		// printf("Ma inlocuieste %d\n", pr->index);
 
 		pthread_cond_broadcast(&scheduler->cond_running);
 		if (scheduler->threads[thread_index].preempted == NO_PREEMPTED) {
@@ -289,11 +302,57 @@ void so_exec(void)
 		}
 
 		while (scheduler->threads[thread_index].state != RUNNING) {
-			printf("[SO_EXEC]: Thred %d sta si asteapta dupa RUNNING\n", thread_index);
+			// printf("[SO_EXEC]: Thred %d sta si asteapta dupa RUNNING\n", thread_index);
 			pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
 		}
 	}
 	pthread_mutex_unlock(&scheduler->mutex_running);
+}
+
+/*
+	TODO: Avem o mica, mai mare problema:
+	Nu cred ca va trebui sa se faca wait in functii, si doar schimb
+	starea, dar nu cred ca va merge ?? Trebuie sa rumegam un pic asta.
+
+	Inca o problema, daca operatia a esuat, tot va trebui sa contorizez
+	aceasta operatie, pentru ca a fost facuta sau NU, habar nu am.
+*/
+/*
+ TODO: Indexul thread-ului il pot afla foarte simplu interogand head-ul cozii.
+ DECI NU VOI MAI AVEA NEVOIE DE ACEL MUTEX END SI CONDITIE END.
+*/
+int so_wait(unsigned int io)
+{
+	int thread_index;
+	Node pr_preempted;
+	Node const *pr;
+
+	pthread_mutex_lock(&scheduler->mutex_running);
+	if (io >= scheduler->nr_events) {
+		pthread_mutex_unlock(&scheduler->mutex_running);
+		return ERROR;
+	}
+
+	/*
+	1. va trebui sa marchez ca fiind in waiting, il sterg din coada
+	2. aleg head-ul cozii si il pun ca noul running
+	3. la fel va trebui sa verific daca a fost inaite preeptata sau nu
+	ca sa mai dau inca un unlock(cel din handler)
+	2. ii schimb cuanta.
+	3. il blochez.
+	1. trebuie sa si scad cuanta
+	*/
+	thread_index = get_current_thread_index(pthread_self());
+	if (thread_index == INVALID_INDEX) {
+		pthread_mutex_unlock(&scheduler->mutex_running);
+		return ERROR;
+	}
+	printf("Thred %d face so_wait.\n", thread_index);
+
+
+	pthread_mutex_unlock(&scheduler->mutex_running);
+
+	return SUCCESS;
 }
 
 void so_end(void)
@@ -302,7 +361,7 @@ void so_end(void)
 		return;
 
 	pthread_mutex_lock(&scheduler->mutex_end);
-	while (scheduler->state != END) {
+	while (scheduler->nr_threads && scheduler->state != END) {
 		pthread_cond_wait(&scheduler->cond_end, &scheduler->mutex_end);
 	}
 	pthread_mutex_unlock(&scheduler->mutex_end);

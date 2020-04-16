@@ -46,7 +46,7 @@ typedef struct {
 	unsigned int nr_threads;
 	unsigned int time_quantum;
 	unsigned int nr_events;
-	unsigned int state;
+	SCH_STATE state;
 	unsigned int timestamp;
 	thread_t *threads;
 	PriorityQueue *ready_queue;
@@ -54,8 +54,7 @@ typedef struct {
 	/*
 	1. Variabila conditie care sa permita unui singur thread sa fie in RUNNING la fiecare
 	moment de timp
-	2. O variabila folosita in so_fork si start_thread/thread_function pentru a notifica parintele
-	ca noul copil a intrat in READY/RUNNING
+	2. schedler-ul sa inceapa sa faca join doar dupa ce toate au executat thread_function
 	*/
 	pthread_cond_t cond_running;
 	pthread_mutex_t mutex_running;
