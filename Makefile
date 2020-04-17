@@ -5,7 +5,7 @@ CFLAGS = -fPIC -Wall
 build: libscheduler.so
 
 libscheduler.so: so_scheduler.o PriorityQueue.o Heap.o heap_util.o
-	$(CC) $(LDFLAGS) -shared -o $@ $^
+	$(CC) -shared -o $@ $^
 
 heap_util.o: PriorityQueue/Heap/heap_util.c
 	$(CC) $(CFLAGS) -o $@ -c $^
