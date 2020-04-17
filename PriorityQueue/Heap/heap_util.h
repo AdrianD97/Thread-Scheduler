@@ -7,6 +7,6 @@ typedef struct {
 	unsigned int timestamp;
 } Node;
 
-int compare_pairs(Node *node1, Node *node2);
+int compare_nodes(Node *node1, Node *node2);
 
 #endif /* HEAP_UTIL_H_ */

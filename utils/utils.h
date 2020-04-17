@@ -31,7 +31,7 @@ typedef enum {
 typedef struct {
 	so_handler *func;
 	Node node;
-} th_func_arg;
+} th_func_arg_t;
 
 typedef struct {
 	unsigned int priority;
@@ -50,15 +50,8 @@ typedef struct {
 	unsigned int timestamp;
 	thread_t *threads;
 	PriorityQueue *ready_queue;
-	/*ADD syncroniziny elements*/
-	/*
-	1. Variabila conditie care sa permita unui singur thread sa fie in RUNNING la fiecare
-	moment de timp
-	2. schedler-ul sa inceapa sa faca join doar dupa ce toate au executat thread_function
-	*/
 	pthread_cond_t cond_running;
 	pthread_mutex_t mutex_running;
-
 	pthread_cond_t cond_end;
 	pthread_mutex_t mutex_end;
 } scheduler_t;

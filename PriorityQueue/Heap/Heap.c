@@ -8,7 +8,7 @@ Heap* createEmptyHeap(int size)
 
 	heap->size = size;
 	heap->index = 0;
-	heap->compare = compare_pairs;
+	heap->compare = compare_nodes;
 	heap->arr = (Node *)malloc((size + 1) * sizeof(Node));
 	if (!heap->arr) {
 		free(heap);
@@ -130,10 +130,11 @@ static void pushDown(Heap* heap, int type) {
 */
 Node removeHeapRoot(Heap* heap, int type) {
 	Node tmp;
+	tmp.index = tmp.priority = tmp.timestamp = 0;
 
-	if (!heap || !heap->arr || heap->index == 0 || (type != MAX_HEAP && type != MIN_HEAP)) {
+	if (!heap || !heap->arr || heap->index == 0
+		|| (type != MAX_HEAP && type != MIN_HEAP))
 		return tmp;
-	}
 
 	tmp = heap->arr[ROOT];
 	heap->arr[ROOT] = heap->arr[heap->index];

@@ -1,6 +1,6 @@
 #include "heap_util.h"
 
-int compare_pairs(Node *node1, Node *node2)
+int compare_nodes(Node *node1, Node *node2)
 {
 	int res = node1->priority - node2->priority;
 
