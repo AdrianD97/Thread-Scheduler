@@ -2,4 +2,4 @@ test_logger: test_logger.c Logger/Logger.c
 	cl /MD $** -D__WIN32 /Fe$@
 
 clean:
-	rm -f test_logger *.o file.log
+	del /Q /s test_logger.exe *.obj file.log

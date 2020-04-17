@@ -11,12 +11,14 @@
 
 #ifdef __WIN32
 #include <windows.h>
+#define END_LINE	"\r\n"
 #else
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#define END_LINE	"\n"
 #endif /* __WIN32 */
 
 #include <stdio.h>
@@ -46,7 +48,7 @@ int logg(Logger *const logger, char *message);
 /*
  * display log file content.
  */
-void history(const Logger *logger);
+void history(const Logger *const logger);
 
 /*
  * free logger resources.

@@ -14,6 +14,9 @@ iar variabila va lua valorea +1(adica pt urmatoare linie care devine prima)
 iar cand dau clear sa devina variabila + 1, iar contor o sa inceapa de la variabila + 1
 MAI VEDEM DACA IMPLEMENTAM SI Aceasta
 */
+/*
+TODO TODO  TODO: Voi aplica solutia cu stergere fisier/golire fisier cand am atins numarul amxim de intarri. :)))
+*/
 Logger *create_logger(char *file_name)
 {
 	Logger *logger;
@@ -69,9 +72,6 @@ static int set_position(const Logger * const logger,
 
 int logg(Logger *const logger, char *message)
 {
-	if (!message)
-		return ERR;
-
 #ifdef __WIN32
 	BOOL ret;
 #endif /* __WIN32 */
@@ -80,10 +80,14 @@ int logg(Logger *const logger, char *message)
 	int length, res;
 	int index, bytes_written;
 
-	sprintf(final_message, "%d\t%s\n", logger->contor, message);
+	if (!message)
+		return ERR;
+
+	sprintf(final_message, "%d\t%s%s", logger->contor, message, END_LINE);
 	++logger->contor;
 	length = strlen(final_message);
 	index = 0;
+
 
 	res = set_position(logger, 0, SEEK_END);
 	if (res == ERR)
@@ -134,7 +138,7 @@ void history(const Logger *const logger)
 		ret = ReadFile(
 			logger->h,
 		    buff,
-			MAX_SIZE,
+			MAX_SIZE - 1,
 		    &bytes_read,
 		    NULL
 		);
@@ -142,7 +146,7 @@ void history(const Logger *const logger)
 		if (ret == FALSE)
 			return;
 #else
-		bytes_read = read(logger->fd, buff, MAX_SIZE);
+		bytes_read = read(logger->fd, buff, MAX_SIZE - 1);
 		if (bytes_read < 0)
 			return;
 #endif /* __WIN32 */
@@ -153,18 +157,21 @@ void history(const Logger *const logger)
 		buff[bytes_read] = '\0';
 		printf("%s", buff);
 	}
-	printf("\n");
+	printf(END_LINE);
 }
 
 int destroy_logger(Logger *logger)
 {
+#ifdef __WIN32
+	BOOL rc;
+#endif /* __WIN32 */
+	int ret;
+
 	if (!logger)
 		return ERR;
 
-	int ret;
-
 #ifdef __WIN32
-	BOOL rc = CloseHandle(logger->h);
+	rc = CloseHandle(logger->h);
 	ret = (rc == FALSE) ? ERR : SUCC;
 #else
 	ret = close(logger->fd);
