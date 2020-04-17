@@ -3,7 +3,7 @@
 
 #include "PriorityQueue/PriorityQueue.h"
 
-void test_priority_queue()
+void test_priority_queue(void)
 {
 	printf("Start test.\n");
 
@@ -93,7 +93,7 @@ void test_priority_queue()
 	assert(head_->priority == node3.priority);
 	assert(head_->index == node3.index);
 	assert(head_->timestamp == node3.timestamp);
-	
+
 	add(priorityQueue, node4);
 	assert(priorityQueue->index == 4);
 	assert(priorityQueue->arr[1].priority == node3.priority);
@@ -114,7 +114,7 @@ void test_priority_queue()
 	assert(head_->priority == node3.priority);
 	assert(head_->index == node3.index);
 	assert(head_->timestamp == node3.timestamp);
-	
+
 	add(priorityQueue, node5);
 	assert(priorityQueue->index == 5);
 	assert(priorityQueue->arr[1].priority == node5.priority);
@@ -206,7 +206,7 @@ void test_priority_queue()
 	assert(head_->priority == node5.priority);
 	assert(head_->index == node5.index);
 	assert(head_->timestamp == node5.timestamp);
-	
+
 	root = remove_head(priorityQueue);
 	assert(root.priority == node5.priority);
 	assert(root.index == node5.index);
@@ -233,7 +233,7 @@ void test_priority_queue()
 	assert(priorityQueue->arr[5].priority == node6.priority);
 	assert(priorityQueue->arr[5].index == node6.index);
 	assert(priorityQueue->arr[5].timestamp == node6.timestamp);
-	
+
 	root = remove_head(priorityQueue);
 	assert(root.priority == node3.priority);
 	assert(root.index == node3.index);

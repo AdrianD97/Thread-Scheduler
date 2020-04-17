@@ -3,7 +3,7 @@
 
 #include "Logger/Logger.h"
 
-void test_logger()
+void test_logger(void)
 {
 	Logger *logger;
 	int ret;
@@ -62,7 +62,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 
@@ -101,7 +101,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 
@@ -140,7 +140,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 
@@ -179,7 +179,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 
@@ -218,7 +218,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 
@@ -257,7 +257,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 
@@ -296,7 +296,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 
@@ -335,7 +335,7 @@ void test_logger()
 
 	ret = logg(logger, "cat /etc/passwd");
 	assert(ret == SUCC);
-	
+
 	ret = logg(logger, "ls ./");
 	assert(ret == SUCC);
 

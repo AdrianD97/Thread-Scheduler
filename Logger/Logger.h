@@ -2,7 +2,7 @@
 #define LOGGER_H_
 
 #define SUCC	0
-#define ERR    (-1)
+#define ERR     1
 
 #define MAX_SIZE	200
 

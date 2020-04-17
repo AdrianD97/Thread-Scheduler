@@ -1,22 +1,33 @@
 #include "Logger.h"
 
 /*
-Ar trebui sa setez o limita pentru contor
-Gen mai trbuie sa iau un parametru care sa imi spuna cate intrari am pus
-iar in momentul in care numarul de intraria atins o limita maxima definita
-va trebui sa sterg de la inceput o linie si sa adaug la sfarsit noua linie venita
+ * Ar trebui sa setez o limita pentru contor
+ * Gen mai trbuie sa iau un parametru care sa imi spuna cate
+ * intrari am pus
+ * iar in momentul in care numarul de intraria atins o limita
+ * maxima definita
+ * va trebui sa sterg de la inceput o linie si sa adaug la sfarsit
+ * noua linie venita
 
-TODO: Alt feature ar fi cand dau clear la history sa golsec fisierul si sa dau
-contorului valoarea primei linii din fisierul pe care il voi goli.
-Deci as putea avea inca o variabila care retine tot timpul id-ul data primei linii
-Aceasta se va modifica, cand numarul de intrari se va atinge, voi setrge prima linie
-iar variabila va lua valorea +1(adica pt urmatoare linie care devine prima)
-iar cand dau clear sa devina variabila + 1, iar contor o sa inceapa de la variabila + 1
-MAI VEDEM DACA IMPLEMENTAM SI Aceasta
-*/
+ * TODO: Alt feature ar fi cand dau clear la history sa
+ * golsec fisierul si sa dau
+ * contorului valoarea primei linii din fisierul pe
+ * care il voi goli.
+ * Deci as putea avea inca o variabila care retine tot
+ * timpul id-ul data primei linii
+ * Aceasta se va modifica, cand numarul de intrari se va
+ * atinge, voi setrge prima linie
+ * iar variabila va lua valorea +1(adica pt urmatoare linie
+ * care devine prima)
+ * iar cand dau clear sa devina variabila + 1, iar
+ * contor o sa inceapa de la variabila + 1
+ * MAI VEDEM DACA IMPLEMENTAM SI Aceasta
+ */
 /*
-TODO TODO  TODO: Voi aplica solutia cu stergere fisier/golire fisier cand am atins numarul amxim de intarri. :)))
-*/
+ *TODO TODO  TODO: Voi aplica solutia cu stergere
+ * fisier/golire fisier cand am atins numarul amxim
+ * de intarri. :)))
+ */
 Logger *create_logger(char *file_name)
 {
 	Logger *logger;
@@ -56,15 +67,17 @@ static int set_position(const Logger * const logger,
 {
 #ifdef __WIN32
 	DWORD pos;
+
 	pos = SetFilePointer(logger->h, offset,
 		NULL, (DWORD)whence);
 	if (pos == INVALID_SET_FILE_POINTER)
-		return ERR;
+		return -ERR;
 #else
 	int pos;
+
 	pos = lseek(logger->fd, offset, whence);
 	if (pos < 0)
-		return ERR;
+		return -ERR;
 #endif /* __WIN32 */
 
 	return SUCC;
@@ -81,7 +94,7 @@ int logg(Logger *const logger, char *message)
 	int index, bytes_written;
 
 	if (!message)
-		return ERR;
+		return -ERR;
 
 	sprintf(final_message, "%d\t%s%s", logger->contor, message, END_LINE);
 	++logger->contor;
@@ -90,8 +103,8 @@ int logg(Logger *const logger, char *message)
 
 
 	res = set_position(logger, 0, SEEK_END);
-	if (res == ERR)
-		return ERR;
+	if (res == -ERR)
+		return -ERR;
 
 	while (length > 0) {
 #ifdef __WIN32
@@ -104,13 +117,13 @@ int logg(Logger *const logger, char *message)
 		);
 
 		if (ret == FALSE)
-			return ERR;
+			return -ERR;
 #else
 		bytes_written = write(logger->fd,
 			&final_message[index], length);
 
 		if (bytes_written < 0)
-			return ERR;
+			return -ERR;
 #endif /* __WIN32 */
 
 		index += bytes_written;
@@ -130,7 +143,7 @@ void history(const Logger *const logger)
 	int bytes_read, res;
 
 	res = set_position(logger, 0, SEEK_SET);
-	if (res == ERR)
+	if (res == -ERR)
 		return;
 
 	while (1) {
@@ -168,11 +181,11 @@ int destroy_logger(Logger *logger)
 	int ret;
 
 	if (!logger)
-		return ERR;
+		return -ERR;
 
 #ifdef __WIN32
 	rc = CloseHandle(logger->h);
-	ret = (rc == FALSE) ? ERR : SUCC;
+	ret = (rc == FALSE) ? -ERR : SUCC;
 #else
 	ret = close(logger->fd);
 #endif /* __WIN32 */
