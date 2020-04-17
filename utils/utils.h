@@ -11,7 +11,7 @@
 #define INVALID_INDEX	(-1)
 #define INVALID_EVENT	(-1)
 
-#define PREEMPTED 		1
+#define PREEMPTED		1
 #define NO_PREEMPTED	0
 
 typedef enum {
@@ -35,7 +35,7 @@ typedef struct {
 
 typedef struct {
 	unsigned int priority;
-	int current_time_quantum;
+	int c_t_qu;
 	STATE state;
 	int event;
 	unsigned char preempted;
@@ -44,12 +44,12 @@ typedef struct {
 
 typedef struct {
 	unsigned int nr_threads;
-	unsigned int time_quantum;
+	unsigned int t_qu;
 	unsigned int nr_events;
 	SCH_STATE state;
 	unsigned int timestamp;
 	thread_t *threads;
-	PriorityQueue *ready_queue;
+	PriorityQueue *ready_q;
 	pthread_cond_t cond_running;
 	pthread_mutex_t mutex_running;
 	pthread_cond_t cond_end;

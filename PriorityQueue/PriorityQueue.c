@@ -1,6 +1,6 @@
 #include "PriorityQueue.h"
 
-PriorityQueue* createPriorityQueue(int size)
+PriorityQueue *createPriorityQueue(int size)
 {
 	return createEmptyHeap(size);
 }
@@ -10,7 +10,7 @@ void add(PriorityQueue *priorityQueue, Node value)
 	addItemToHeap(priorityQueue, value, MAX_HEAP);
 }
 
-Node const* head(const PriorityQueue *priorityQueue)
+Node const *head(const PriorityQueue *priorityQueue)
 {
 	return getHeapRoot(priorityQueue);
 }

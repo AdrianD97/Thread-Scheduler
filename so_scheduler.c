@@ -1,7 +1,7 @@
 #include "so_scheduler.h"
 #include "utils/utils.h"
 
-static scheduler_t *scheduler;
+static scheduler_t *sch;
 
 static pthread_mutexattr_t attr;
 
@@ -9,66 +9,66 @@ int so_init(unsigned int time_quantum, unsigned int io)
 {
 	int ret1, ret2;
 
-	if (scheduler)
+	if (sch)
 		return ERROR;
 
 	if (!time_quantum || (io > SO_MAX_NUM_EVENTS))
 		return ERROR;
 
-	scheduler = (scheduler_t *)malloc(sizeof(scheduler_t));
-	if (!scheduler)
+	sch = (scheduler_t *)malloc(sizeof(scheduler_t));
+	if (!sch)
 		return ERROR;
 
-	scheduler->nr_threads = scheduler->timestamp = 0;
-	scheduler->time_quantum = time_quantum;
-	scheduler->nr_events = io;
-	scheduler->state = NOT_YET;
+	sch->nr_threads = sch->timestamp = 0;
+	sch->t_qu = time_quantum;
+	sch->nr_events = io;
+	sch->state = NOT_YET;
 
-	scheduler->threads = (thread_t *)malloc(MAX_THREADS * sizeof(thread_t));
-	if (!scheduler->threads) {
-		free(scheduler);
-		return ERROR;
-	}
-
-	scheduler->ready_queue = createPriorityQueue(MAX_THREADS);
-	if (!scheduler->ready_queue) {
-		free(scheduler->threads);
-		free(scheduler);
+	sch->threads = (thread_t *)malloc(MAX_THREADS * sizeof(thread_t));
+	if (!sch->threads) {
+		free(sch);
 		return ERROR;
 	}
 
-	ret1 = pthread_cond_init(&scheduler->cond_running, NULL);
-	ret2 = pthread_cond_init(&scheduler->cond_end, NULL);
+	sch->ready_q = createPriorityQueue(MAX_THREADS);
+	if (!sch->ready_q) {
+		free(sch->threads);
+		free(sch);
+		return ERROR;
+	}
+
+	ret1 = pthread_cond_init(&sch->cond_running, NULL);
+	ret2 = pthread_cond_init(&sch->cond_end, NULL);
 	if (ret1 | ret2) {
-		destroy(scheduler->ready_queue);
-		free(scheduler->ready_queue);
-		free(scheduler->threads);
+		destroy(sch->ready_q);
+		free(sch->ready_q);
+		free(sch->threads);
 
 		if (ret1 && !ret2)
-			pthread_cond_destroy(&scheduler->cond_end);
+			pthread_cond_destroy(&sch->cond_end);
 		if (ret2 && !ret1)
-			pthread_cond_destroy(&scheduler->cond_running);
+			pthread_cond_destroy(&sch->cond_running);
 
-		free(scheduler);
+		free(sch);
 		return ERROR;
 	}
 
 	pthread_mutexattr_init(&attr);
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	ret1 = pthread_mutex_init(&scheduler->mutex_running, &attr);
-	pthread_mutex_init(&scheduler->mutex_end, NULL);
+	ret1 = pthread_mutex_init(&sch->mutex_running, &attr);
+	pthread_mutex_init(&sch->mutex_end, NULL);
 	if (ret1 | ret2) {
-		destroy(scheduler->ready_queue);
-		free(scheduler->ready_queue);
-		free(scheduler->threads);
-		pthread_cond_destroy(&scheduler->cond_running);
-		pthread_cond_destroy(&scheduler->cond_end);
+		destroy(sch->ready_q);
+		free(sch->ready_q);
+		free(sch->threads);
+		pthread_cond_destroy(&sch->cond_running);
+		pthread_cond_destroy(&sch->cond_end);
 
 		if (ret1 && !ret2)
-			pthread_mutex_destroy(&scheduler->mutex_end);
+			pthread_mutex_destroy(&sch->mutex_end);
 		if (ret2 && !ret1)
-			pthread_mutex_destroy(&scheduler->mutex_running);
-		free(scheduler);
+			pthread_mutex_destroy(&sch->mutex_running);
+		free(sch);
 		return ERROR;
 	}
 
@@ -77,30 +77,30 @@ int so_init(unsigned int time_quantum, unsigned int io)
 
 static void block(unsigned int index)
 {
-	pthread_cond_broadcast(&scheduler->cond_running);
-	if (scheduler->threads[index].preempted == NO_PREEMPTED) {
-		scheduler->threads[index].preempted = PREEMPTED;
-		pthread_mutex_unlock(&scheduler->mutex_running);
+	pthread_cond_broadcast(&sch->cond_running);
+	if (sch->threads[index].preempted == NO_PREEMPTED) {
+		sch->threads[index].preempted = PREEMPTED;
+		pthread_mutex_unlock(&sch->mutex_running);
 	}
 
-	while (scheduler->threads[index].state != RUNNING) {
-		pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
-	}
+	while (sch->threads[index].state != RUNNING)
+		pthread_cond_wait(&sch->cond_running,
+			&sch->mutex_running);
 }
 
-static void preempt_crt_thread(unsigned int current_index,
+static void preempt_crt_thread(unsigned int crt_ind,
 	Node *node, unsigned int new_index)
 {
-	node->timestamp = scheduler->timestamp++;
-	add(scheduler->ready_queue, *node);
+	node->timestamp = sch->timestamp++;
+	add(sch->ready_q, *node);
 
-	scheduler->threads[current_index].state = READY;
-	scheduler->threads[current_index].current_time_quantum = scheduler->time_quantum;
+	sch->threads[crt_ind].state = READY;
+	sch->threads[crt_ind].c_t_qu = sch->t_qu;
 
-	scheduler->threads[new_index].current_time_quantum = scheduler->time_quantum;
-	scheduler->threads[new_index].state = RUNNING;
+	sch->threads[new_index].c_t_qu = sch->t_qu;
+	sch->threads[new_index].state = RUNNING;
 
-	block(current_index);
+	block(crt_ind);
 }
 
 static void *thread_func(void *arg)
@@ -113,37 +113,37 @@ static void *thread_func(void *arg)
 	free(arg);
 	node = arg_th_func.node;
 
-	scheduler->threads[node.index].thread_id = pthread_self();
+	sch->threads[node.index].thread_id = pthread_self();
 
-	pthread_mutex_lock(&scheduler->mutex_running);
-	while (scheduler->threads[node.index].state != RUNNING)
-		pthread_cond_wait(&scheduler->cond_running,
-			&scheduler->mutex_running);
+	pthread_mutex_lock(&sch->mutex_running);
+	while (sch->threads[node.index].state != RUNNING)
+		pthread_cond_wait(&sch->cond_running,
+			&sch->mutex_running);
 
 	arg_th_func.func(node.priority);
 
-	if (scheduler->threads[node.index].preempted == PREEMPTED) {
-		pthread_mutex_lock(&scheduler->mutex_running);
-		while (scheduler->threads[node.index].state != RUNNING)
-			pthread_cond_wait(&scheduler->cond_running,
-				&scheduler->mutex_running);
-		scheduler->threads[node.index].preempted = NO_PREEMPTED;
+	if (sch->threads[node.index].preempted == PREEMPTED) {
+		pthread_mutex_lock(&sch->mutex_running);
+		while (sch->threads[node.index].state != RUNNING)
+			pthread_cond_wait(&sch->cond_running,
+				&sch->mutex_running);
+		sch->threads[node.index].preempted = NO_PREEMPTED;
 	}
 
-	node = remove_head(scheduler->ready_queue);
-	scheduler->threads[node.index].state = TERMINATED;
+	node = remove_head(sch->ready_q);
+	sch->threads[node.index].state = TERMINATED;
 
-	pr = head(scheduler->ready_queue);
+	pr = head(sch->ready_q);
 	if (pr) {
-		scheduler->threads[pr->index].state = RUNNING;
-		pthread_cond_broadcast(&scheduler->cond_running);
+		sch->threads[pr->index].state = RUNNING;
+		pthread_cond_broadcast(&sch->cond_running);
 	} else {
-		pthread_mutex_lock(&scheduler->mutex_end);
-		scheduler->state = END;
-		pthread_cond_broadcast(&scheduler->cond_end);
-		pthread_mutex_unlock(&scheduler->mutex_end);
+		pthread_mutex_lock(&sch->mutex_end);
+		sch->state = END;
+		pthread_cond_broadcast(&sch->cond_end);
+		pthread_mutex_unlock(&sch->mutex_end);
 	}
-	pthread_mutex_unlock(&scheduler->mutex_running);
+	pthread_mutex_unlock(&sch->mutex_running);
 
 	return NULL;
 }
@@ -152,11 +152,11 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 {
 	int ret, q;
 	tid_t thread_id;
-	Node node, pr_preempted;
+	Node node, preempt;
 	Node const *pr;
 	th_func_arg_t *arg;
 	int preempted;
-	unsigned int thread_index, index;
+	unsigned int th_ind, index;
 
 	preempted = 0;
 
@@ -169,149 +169,149 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 
 	arg->func = func;
 
-	pthread_mutex_lock(&scheduler->mutex_running);
-	if (scheduler->state != NOT_YET) {
-		pr = head(scheduler->ready_queue);
+	pthread_mutex_lock(&sch->mutex_running);
+	if (sch->state != NOT_YET) {
+		pr = head(sch->ready_q);
 		if (!pr) {
-			pthread_mutex_unlock(&scheduler->mutex_running);
+			pthread_mutex_unlock(&sch->mutex_running);
 			return INVALID_TID;
 		}
-		thread_index = pr->index;
+		th_ind = pr->index;
 	}
 
-	node.index = scheduler->nr_threads++;
+	node.index = sch->nr_threads++;
 	node.priority = priority;
-	node.timestamp = scheduler->timestamp++;
+	node.timestamp = sch->timestamp++;
 	arg->node = node;
 
-	scheduler->threads[node.index].priority = priority;
-	scheduler->threads[node.index].current_time_quantum = scheduler->time_quantum;
-	scheduler->threads[node.index].state = NEW;
-	scheduler->threads[node.index].event = INVALID_EVENT;
-	scheduler->threads[node.index].preempted = NO_PREEMPTED;
+	sch->threads[node.index].priority = priority;
+	sch->threads[node.index].c_t_qu = sch->t_qu;
+	sch->threads[node.index].state = NEW;
+	sch->threads[node.index].event = INVALID_EVENT;
+	sch->threads[node.index].preempted = NO_PREEMPTED;
 
-	scheduler->threads[node.index].state = READY;
-	add(scheduler->ready_queue, node);
+	sch->threads[node.index].state = READY;
+	add(sch->ready_q, node);
 
 	ret = pthread_create(&thread_id, NULL, thread_func, (void *)arg);
 	if (ret) {
-		pthread_mutex_unlock(&scheduler->mutex_running);
+		pthread_mutex_unlock(&sch->mutex_running);
 		return INVALID_TID;
 	}
 
-	if (scheduler->state != NOT_YET) {
-		if (node.priority > scheduler->threads[thread_index].priority) {
+	if (sch->state != NOT_YET) {
+		if (node.priority > sch->threads[th_ind].priority) {
 			preempted = 1;
 			index = node.index;
 		} else {
-			q = --scheduler->threads[thread_index].current_time_quantum;
+			q = --sch->threads[th_ind].c_t_qu;
 			if (q == 0) {
-				pr_preempted = remove_head(scheduler->ready_queue);
-				pr = head(scheduler->ready_queue);
+				preempt = remove_head(sch->ready_q);
+				pr = head(sch->ready_q);
 				if (pr) {
-					if (pr->priority >= pr_preempted.priority) {
+					if (pr->priority >= preempt.priority) {
 						preempted = 1;
 						index = pr->index;
 					}
 				}
 
 				if (!preempted)
-					scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
-				add(scheduler->ready_queue, pr_preempted);
+					sch->threads[th_ind].c_t_qu = sch->t_qu;
+				add(sch->ready_q, preempt);
 			}
 		}
 
 		if (preempted) {
-			pr_preempted = remove_head(scheduler->ready_queue);
-			preempt_crt_thread(thread_index, &pr_preempted, index);
+			preempt = remove_head(sch->ready_q);
+			preempt_crt_thread(th_ind, &preempt, index);
 		}
 	} else {
-		scheduler->state = START;
-		scheduler->threads[node.index].state = RUNNING;
+		sch->state = START;
+		sch->threads[node.index].state = RUNNING;
 	}
 
-	pthread_mutex_unlock(&scheduler->mutex_running);
+	pthread_mutex_unlock(&sch->mutex_running);
 
 	return thread_id;
 }
 
 void so_exec(void)
 {
-	int thread_index, q;
+	int th_ind, q;
 	unsigned int preempted = 0;
-	Node pr_preempted;
+	Node preempt;
 	Node const *pr;
 
-	pthread_mutex_lock(&scheduler->mutex_running);
-	pr = head(scheduler->ready_queue);
+	pthread_mutex_lock(&sch->mutex_running);
+	pr = head(sch->ready_q);
 	if (!pr) {
-		pthread_mutex_unlock(&scheduler->mutex_running);
+		pthread_mutex_unlock(&sch->mutex_running);
 		return;
 	}
-	thread_index = pr->index;
+	th_ind = pr->index;
 
-	q = --scheduler->threads[thread_index].current_time_quantum;
+	q = --sch->threads[th_ind].c_t_qu;
 	if (q == 0) {
-		pr_preempted = remove_head(scheduler->ready_queue);
-		pr = head(scheduler->ready_queue);
+		preempt = remove_head(sch->ready_q);
+		pr = head(sch->ready_q);
 		if (pr) {
-			if (pr->priority >= pr_preempted.priority)
+			if (pr->priority >= preempt.priority)
 				preempted = 1;
 		}
 
 		if (!preempted)
-			scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
-		add(scheduler->ready_queue, pr_preempted);
+			sch->threads[th_ind].c_t_qu = sch->t_qu;
+		add(sch->ready_q, preempt);
 	}
 
 	if (preempted) {
-		pr_preempted = remove_head(scheduler->ready_queue);
-		preempt_crt_thread(thread_index, &pr_preempted, pr->index);
+		preempt = remove_head(sch->ready_q);
+		preempt_crt_thread(th_ind, &preempt, pr->index);
 	}
-	pthread_mutex_unlock(&scheduler->mutex_running);
+	pthread_mutex_unlock(&sch->mutex_running);
 }
 
 int so_wait(unsigned int io)
 {
-	int thread_index;
+	int th_ind;
 	Node pr_wait;
 	Node const *pr;
 
-	pthread_mutex_lock(&scheduler->mutex_running);
-	if (io >= scheduler->nr_events) {
-		pthread_mutex_unlock(&scheduler->mutex_running);
+	pthread_mutex_lock(&sch->mutex_running);
+	if (io >= sch->nr_events) {
+		pthread_mutex_unlock(&sch->mutex_running);
 		return ERROR;
 	}
 
-	pr_wait = remove_head(scheduler->ready_queue);
-	thread_index = pr_wait.index;
+	pr_wait = remove_head(sch->ready_q);
+	th_ind = pr_wait.index;
 
-	pr = head(scheduler->ready_queue);
+	pr = head(sch->ready_q);
 	if (pr) {
-		scheduler->threads[pr->index].current_time_quantum = scheduler->time_quantum;
-		scheduler->threads[pr->index].state = RUNNING;
+		sch->threads[pr->index].c_t_qu = sch->t_qu;
+		sch->threads[pr->index].state = RUNNING;
 	}
-	scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
-	scheduler->threads[thread_index].state = WAITING;
-	scheduler->threads[thread_index].event = io;
+	sch->threads[th_ind].c_t_qu = sch->t_qu;
+	sch->threads[th_ind].state = WAITING;
+	sch->threads[th_ind].event = io;
 
-	block(thread_index);
-	pthread_mutex_unlock(&scheduler->mutex_running);
+	block(th_ind);
+	pthread_mutex_unlock(&sch->mutex_running);
 
 	return SUCCESS;
 }
 
-static void change(unsigned int thread_index)
+static void change(unsigned int th_ind)
 {
 	Node node;
 
-	node.index = thread_index;
-	node.priority = scheduler->threads[thread_index].priority;
-	node.timestamp = scheduler->timestamp++;
-	scheduler->threads[thread_index].state = READY;
-	scheduler->threads[thread_index].event = INVALID_EVENT;
+	node.index = th_ind;
+	node.priority = sch->threads[th_ind].priority;
+	node.timestamp = sch->timestamp++;
+	sch->threads[th_ind].state = READY;
+	sch->threads[th_ind].event = INVALID_EVENT;
 
-	add(scheduler->ready_queue, node);
+	add(sch->ready_q, node);
 }
 
 static unsigned int wake_up(unsigned int event)
@@ -320,16 +320,16 @@ static unsigned int wake_up(unsigned int event)
 	unsigned int nr_wake_up_threads = 0;
 
 	left = 0;
-	right = scheduler->nr_threads - 1;
+	right = sch->nr_threads - 1;
 	while (left < right) {
-		if (scheduler->threads[left].state == WAITING
-			&& scheduler->threads[left].event == event) {
+		if (sch->threads[left].state == WAITING
+			&& sch->threads[left].event == event) {
 			++nr_wake_up_threads;
 			change(left);
 		}
 
-		if (scheduler->threads[right].state == WAITING
-			&& scheduler->threads[right].event == event) {
+		if (sch->threads[right].state == WAITING
+			&& sch->threads[right].event == event) {
 			++nr_wake_up_threads;
 			change(right);
 		}
@@ -338,8 +338,8 @@ static unsigned int wake_up(unsigned int event)
 		--right;
 	}
 
-	if (left == right && scheduler->threads[right].state == WAITING
-		&& scheduler->threads[right].event == event) {
+	if (left == right && sch->threads[right].state == WAITING
+		&& sch->threads[right].event == event) {
 		++nr_wake_up_threads;
 		change(left);
 	}
@@ -352,67 +352,66 @@ int so_signal(unsigned int io)
 	int nr_wake_up_threads, preempted, q;
 	Node node;
 	Node const *pr;
-	unsigned int thread_index;
+	unsigned int th_ind;
 
 	preempted = 0;
-	pthread_mutex_lock(&scheduler->mutex_running);
-	if (io >= scheduler->nr_events) {
-		pthread_mutex_unlock(&scheduler->mutex_running);
+	pthread_mutex_lock(&sch->mutex_running);
+	if (io >= sch->nr_events) {
+		pthread_mutex_unlock(&sch->mutex_running);
 		return ERROR;
 	}
 
-	node = remove_head(scheduler->ready_queue);
-	thread_index = node.index;
+	node = remove_head(sch->ready_q);
+	th_ind = node.index;
 	nr_wake_up_threads = wake_up(io);
 
-	pr = head(scheduler->ready_queue);
+	pr = head(sch->ready_q);
 	if (pr) {
-		if (pr->priority > scheduler->threads[thread_index].priority)
+		if (pr->priority > sch->threads[th_ind].priority)
 			preempted = 1;
 	}
 
-	q = --scheduler->threads[thread_index].current_time_quantum;
+	q = --sch->threads[th_ind].c_t_qu;
 	if (!preempted && (q == 0)) {
-		if (pr && pr->priority == scheduler->threads[thread_index].priority)
+		if (pr && pr->priority == sch->threads[th_ind].priority)
 			preempted = 1;
 
 		if (!preempted)
-			scheduler->threads[thread_index].current_time_quantum = scheduler->time_quantum;
+			sch->threads[th_ind].c_t_qu = sch->t_qu;
 	}
 
 	if (preempted)
-		preempt_crt_thread(thread_index, &node, pr->index);
+		preempt_crt_thread(th_ind, &node, pr->index);
 	else
-		add(scheduler->ready_queue, node);
+		add(sch->ready_q, node);
 
-	pthread_mutex_unlock(&scheduler->mutex_running);
+	pthread_mutex_unlock(&sch->mutex_running);
 
 	return nr_wake_up_threads;
 }
 
 void so_end(void)
 {
-	if (!scheduler)
+	if (!sch)
 		return;
 
-	pthread_mutex_lock(&scheduler->mutex_end);
-	while (scheduler->nr_threads && scheduler->state != END) {
-		pthread_cond_wait(&scheduler->cond_end, &scheduler->mutex_end);
-	}
-	pthread_mutex_unlock(&scheduler->mutex_end);
+	pthread_mutex_lock(&sch->mutex_end);
+	while (sch->nr_threads && sch->state != END)
+		pthread_cond_wait(&sch->cond_end, &sch->mutex_end);
 
-	for (int i = 0; i < scheduler->nr_threads; ++i) {
-		pthread_join(scheduler->threads[i].thread_id, NULL);
-	}
+	pthread_mutex_unlock(&sch->mutex_end);
 
-	destroy(scheduler->ready_queue);
-	free(scheduler->ready_queue);
-	free(scheduler->threads);
-	pthread_cond_destroy(&scheduler->cond_running);
-	pthread_mutex_destroy(&scheduler->mutex_running);
-	pthread_cond_destroy(&scheduler->cond_end);
-	pthread_mutex_destroy(&scheduler->mutex_end);
+	for (int i = 0; i < sch->nr_threads; ++i)
+		pthread_join(sch->threads[i].thread_id, NULL);
 
-	free(scheduler);
-	scheduler = NULL;
+	destroy(sch->ready_q);
+	free(sch->ready_q);
+	free(sch->threads);
+	pthread_cond_destroy(&sch->cond_running);
+	pthread_mutex_destroy(&sch->mutex_running);
+	pthread_cond_destroy(&sch->cond_end);
+	pthread_mutex_destroy(&sch->mutex_end);
+
+	free(sch);
+	sch = NULL;
 }

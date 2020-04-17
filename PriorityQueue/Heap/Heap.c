@@ -1,8 +1,9 @@
 #include "Heap.h"
 
-Heap* createEmptyHeap(int size)
+Heap *createEmptyHeap(int size)
 {
-	Heap* heap = (Heap*)malloc(sizeof(Heap));
+	Heap *heap = (Heap *)malloc(sizeof(Heap));
+
 	if (!heap)
 		return NULL;
 
@@ -18,7 +19,7 @@ Heap* createEmptyHeap(int size)
 	return heap;
 }
 
-static void pushUp(Heap* heap, int type)
+static void pushUp(Heap *heap, int type)
 {
 	int index = heap->index;
 	int parent, result = 0;
@@ -26,21 +27,19 @@ static void pushUp(Heap* heap, int type)
 
 	do {
 		parent = index / 2;
-		
-		if (parent == 0) {
+
+		if (parent == 0)
 			break;
-		}
 
-		result = heap->compare(&heap->arr[index], &heap->arr[parent]);
+		result = heap->compare(&heap->arr[index],
+			&heap->arr[parent]);
 
-		if (type == MIN_HEAP) { // heap is min heap
-			if (result >= 0) {
+		if (type == MIN_HEAP) { /* heap is min heap */
+			if (result >= 0)
 				break;
-			}
-		} else { // heap is max heap
-			if (result <= 0) {
+		} else { /* heap is max heap */
+			if (result <= 0)
 				break;
-			}
 		}
 
 		tmp = heap->arr[index];
@@ -51,36 +50,35 @@ static void pushUp(Heap* heap, int type)
 }
 
 /*
-	type = MIN_HEAP -> heap is a min heap
-	type = MAX_HEAP -> heap is a max heap
-*/
-void addItemToHeap(Heap* heap, Node value, int type)
+ *	type = MIN_HEAP -> heap is a min heap
+ *	type = MAX_HEAP -> heap is a max heap
+ */
+void addItemToHeap(Heap *heap, Node value, int type)
 {
-	if (!heap || (type != MAX_HEAP && type != MIN_HEAP)) {
+	if (!heap ||
+		(type != MAX_HEAP && type != MIN_HEAP))
 		return;
-	}
 
-	// check if Heap is full
-	if (heap->index + 1 > heap->size) {
+	/* check if Heap is full */
+	if (heap->index + 1 > heap->size)
 		return;
-	}
 
 	heap->arr[++heap->index] = value;
 	pushUp(heap, type);
 }
 
-Node const* getHeapRoot(const Heap* heap) {
-	if (!heap || heap->index == 0) {
+Node const *getHeapRoot(const Heap *heap)
+{
+	if (!heap || heap->index == 0)
 		return NULL;
-	}
 
 	return (Node const *)&heap->arr[ROOT];
 }
 
-static void pushDown(Heap* heap, int type) {
-	if (heap->index == 0) {
+static void pushDown(Heap *heap, int type)
+{
+	if (heap->index == 0)
 		return;
-	}
 
 	int index = ROOT, result;
 	int child_ind, result_;
@@ -89,47 +87,50 @@ static void pushDown(Heap* heap, int type) {
 	do {
 		if (2 * index <= heap->index) {
 			if (2 * index + 1 > heap->index) {
-				result = heap->compare(&heap->arr[index], &heap->arr[2 * index]);
+				result = heap->compare(&heap->arr[index],
+					&heap->arr[2 * index]);
 				child_ind = 2 * index;
 			} else {
-				result_ = heap->compare(&heap->arr[2 * index], &heap->arr[2 * index + 1]);
+				result_ = heap->compare(&heap->arr[2 * index],
+					&heap->arr[2 * index + 1]);
 
-				if (type == MIN_HEAP) { // heap is min heap
-					child_ind = (result_ < 0) ? (2 * index) : (2 * index + 1);
-				} else { // heap is max heap
-					child_ind = (result_ > 0) ? (2 * index) : (2 * index + 1);
-				}
+				if (type == MIN_HEAP) /* heap is min heap */
+					child_ind = (result_ < 0) ? (2 * index)
+							: (2 * index + 1);
+				else /* heap is max heap */
+					child_ind = (result_ > 0) ? (2 * index)
+							: (2 * index + 1);
 
-				result = heap->compare(&heap->arr[index], &heap->arr[child_ind]);
+				result = heap->compare(&heap->arr[index],
+					&heap->arr[child_ind]);
 			}
 
-			if (type == MIN_HEAP) { // heap is min heap
-				if (result <= 0) {
+			if (type == MIN_HEAP) { /* heap is min heap */
+				if (result <= 0)
 					break;
-				}
-			} else { // heap is max heap
-				if (result >= 0) {
+			} else { /* heap is max heap */
+				if (result >= 0)
 					break;
-				}
 			}
 
 			tmp = heap->arr[index];
 			heap->arr[index] = heap->arr[child_ind];
 			heap->arr[child_ind] = tmp;
 			index = child_ind;
-		} else {
+		} else
 			break;
-		}
 
 	} while (1);
 }
 
 /*
-	type = MIN_HEAP -> heap is a min heap
-	type = MAX_HEAP -> heap is a max heap
-*/
-Node removeHeapRoot(Heap* heap, int type) {
+ *	type = MIN_HEAP -> heap is a min heap
+ *	type = MAX_HEAP -> heap is a max heap
+ */
+Node removeHeapRoot(Heap *heap, int type)
+{
 	Node tmp;
+
 	tmp.index = tmp.priority = tmp.timestamp = 0;
 
 	if (!heap || !heap->arr || heap->index == 0
@@ -146,10 +147,10 @@ Node removeHeapRoot(Heap* heap, int type) {
 	return tmp;
 }
 
-void freeHeapMemory(Heap* heap) {
-	if (!heap || !heap->arr) {
+void freeHeapMemory(Heap *heap)
+{
+	if (!heap || !heap->arr)
 		return;
-	}
 
 	free(heap->arr);
 	heap->arr = NULL;
