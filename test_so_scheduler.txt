@@ -514,9 +514,20 @@ void h0(unsigned int p)
 	so_exec();
 }
 
+void for_function(unsigned int p)
+{
+	for (int i = 0; i < 100; ++i) {
+		so_exec();
+
+		so_exec();
+
+		so_exec();
+	}
+}
+
 int main(int argc, char const *argv[])
 {
-	unsigned int q = 3;
+	unsigned int q = 2;
 	unsigned int io = 20;
 
 	if (so_init(q, io) == -1) {
@@ -524,7 +535,11 @@ int main(int argc, char const *argv[])
 		return -1;
 	}
 
-	tid_t t_id = so_fork(&h0, 0);
+	// tid_t t_id = so_fork(&h0, 0);
+
+	// printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
+
+	tid_t t_id = so_fork(&for_function, 0);
 
 	printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
 

@@ -13,7 +13,10 @@ int so_init(unsigned int time_quantum, unsigned int io)
 {
 	int ret1, ret2;
 
-	if (io >= SO_MAX_NUM_EVENTS)
+	if (scheduler)
+		return ERROR;
+
+	if (!time_quantum || (io > SO_MAX_NUM_EVENTS))
 		return ERROR;
 
 	scheduler = (scheduler_t *)malloc(sizeof(scheduler_t));
@@ -24,7 +27,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	scheduler->time_quantum = time_quantum;
 	scheduler->nr_events = io;
 	scheduler->state = NOT_YET;
-	
+
 	scheduler->threads = (thread_t *)malloc(MAX_THREADS * sizeof(thread_t));
 	if (!scheduler->threads) {
 		free(scheduler);
@@ -76,7 +79,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	return SUCCESS;
 }
 
-static void* thread_func(void *arg)
+static void *thread_func(void *arg)
 {
 	Node node;
 	Node const *pr;
@@ -89,17 +92,17 @@ static void* thread_func(void *arg)
 	scheduler->threads[node.index].thread_id = pthread_self();
 
 	pthread_mutex_lock(&scheduler->mutex_running);
-	while (scheduler->threads[node.index].state != RUNNING) {
-		pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
-	}
+	while (scheduler->threads[node.index].state != RUNNING)
+		pthread_cond_wait(&scheduler->cond_running,
+			&scheduler->mutex_running);
 
 	arg_th_func.func(node.priority);
 
 	if (scheduler->threads[node.index].preempted == PREEMPTED) {
 		pthread_mutex_lock(&scheduler->mutex_running);
-		while (scheduler->threads[node.index].state != RUNNING) {
-			pthread_cond_wait(&scheduler->cond_running, &scheduler->mutex_running);
-		}
+		while (scheduler->threads[node.index].state != RUNNING)
+			pthread_cond_wait(&scheduler->cond_running,
+				&scheduler->mutex_running);
 		scheduler->threads[node.index].preempted = NO_PREEMPTED;
 	}
 
@@ -108,7 +111,6 @@ static void* thread_func(void *arg)
 
 	pr = head(scheduler->ready_queue);
 	if (pr) {
-		// printf("Thred %d zice ca next is %d.\n", node.index, pr->index);
 		scheduler->threads[pr->index].state = RUNNING;
 		pthread_cond_broadcast(&scheduler->cond_running);
 	} else {
@@ -117,7 +119,7 @@ static void* thread_func(void *arg)
 		pthread_cond_broadcast(&scheduler->cond_end);
 		pthread_mutex_unlock(&scheduler->mutex_end);
 	}
-	printf("Thred %d m-am terminat.\n", node.index);
+	// printf("Thred %d m-am terminat.\n", node.index);
 	pthread_mutex_unlock(&scheduler->mutex_running);
 
 	return NULL;
@@ -152,7 +154,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 			return INVALID_TID;
 		}
 		thread_index = pr->index;
-		printf("Thred %d face so_fork.\n", thread_index);
+		// printf("Thred %d face so_fork.\n", thread_index);
 	}
 
 	node.index = scheduler->nr_threads++;
@@ -244,7 +246,7 @@ void so_exec(void)
 		return;
 	}
 	thread_index = pr->index;
-	printf("Thred %d face so_exec.\n", thread_index);
+	// printf("Thred %d face so_exec.\n", thread_index);
 
 	q = --scheduler->threads[thread_index].current_time_quantum;
 	if (q == 0) {
@@ -312,7 +314,7 @@ int so_wait(unsigned int io)
 
 	pr_wait = remove_head(scheduler->ready_queue);
 	thread_index = pr_wait.index;
-	printf("Thred %d face so_wait.\n", thread_index);
+	// printf("Thred %d face so_wait.\n", thread_index);
 
 	pr = head(scheduler->ready_queue);
 	if (pr) {
@@ -401,7 +403,7 @@ int so_signal(unsigned int io)
 	node = remove_head(scheduler->ready_queue);
 	thread_index = node.index;
 	nr_wake_up_threads = wake_up(io);
-	printf("Thred %d face so_signal si atrezit %d.\n", thread_index, nr_wake_up_threads);
+	// printf("Thred %d face so_signal si atrezit %d.\n", thread_index, nr_wake_up_threads);
 
 	pr = head(scheduler->ready_queue);
 	if (pr) {

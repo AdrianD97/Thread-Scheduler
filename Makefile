@@ -1,7 +1,24 @@
-SOURCES=test_so_scheduler.c so_scheduler.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
+CC = gcc
+CFLAGS = -fPIC -Wall
 
-test_so_scheduler: $(SOURCES)
-	gcc -Wall $^ -o $@ -lpthread
+.PHONY: build
+build: libscheduler.so
 
+libscheduler.so: so_scheduler.o PriorityQueue.o Heap.o heap_util.o
+	$(CC) $(LDFLAGS) -shared -o $@ $^
+
+heap_util.o: PriorityQueue/Heap/heap_util.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+Heap.o: PriorityQueue/Heap/Heap.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+PriorityQueue.o: PriorityQueue/PriorityQueue.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+so_scheduler.o: so_scheduler.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+.PHONY: clean
 clean:
-	rm -f test_so_scheduler *.o
+	rm -f so_scheduler.o PriorityQueue.o Heap.o heap_util.o libscheduler.so
