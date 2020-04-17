@@ -1,0 +1,5 @@
+test_logger: test_logger.c Logger/Logger.c
+	gcc -Wall $^ -o $@
+
+clean:
+	rm -f test_logger *.o file.log
