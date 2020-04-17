@@ -1,0 +1,5 @@
+test_logger: test_logger.c Logger/Logger.c
+	gcc -Wall $^ -D__WIN32 -o $@
+
+clean:
+	rm -f test_logger *.o file.log
