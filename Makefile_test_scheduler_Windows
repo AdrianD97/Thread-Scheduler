@@ -1,0 +1,5 @@
+test_scheduler: test_scheduler.c so_scheduler.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
+	cl /MD $** -D__WIN32 /Fe$@
+
+clean:
+	del /Q /s test_scheduler.exe *.obj
