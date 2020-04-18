@@ -16,8 +16,6 @@ typedef pthread_mutex_t MUTEX;
 #define UNLOCK pthread_mutex_unlock
 #define DESTROY_LOCK pthread_mutex_destroy
 
-#define GetThreadId pthread_self
-
 #define RET_VAL NULL
 #else
 #include <windows.h>
@@ -33,8 +31,6 @@ typedef CRITICAL_SECTION MUTEX;
 #define LOCK EnterCriticalSection
 #define UNLOCK LeaveCriticalSection
 #define DESTROY_LOCK DeleteCriticalSection
-
-#define GetThreadId GetCurrentThread
 
 #define RET_VAL 0
 #endif /* __linux__ */

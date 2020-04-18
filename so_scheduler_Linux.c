@@ -1,5 +1,7 @@
+#include <stdio.h>
+
 #include "so_scheduler.h"
-#include "utils/utils.h"
+#include "utils_Linux/utils.h"
 
 static scheduler_t *sch;
 
@@ -10,14 +12,14 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	int ret1, ret2;
 
 	if (sch)
-		return ERROR;
+		return ERROR_;
 
 	if (!time_quantum || (io > SO_MAX_NUM_EVENTS))
-		return ERROR;
+		return ERROR_;
 
 	sch = (scheduler_t *)malloc(sizeof(scheduler_t));
 	if (!sch)
-		return ERROR;
+		return ERROR_;
 
 	sch->nr_threads = sch->timestamp = 0;
 	sch->t_qu = time_quantum;
@@ -27,14 +29,14 @@ int so_init(unsigned int time_quantum, unsigned int io)
 	sch->threads = (thread_t *)malloc(MAX_THREADS * sizeof(thread_t));
 	if (!sch->threads) {
 		free(sch);
-		return ERROR;
+		return ERROR_;
 	}
 
 	sch->ready_q = createPriorityQueue(MAX_THREADS);
 	if (!sch->ready_q) {
 		free(sch->threads);
 		free(sch);
-		return ERROR;
+		return ERROR_;
 	}
 
 	ret1 = pthread_cond_init(&sch->cond_running, NULL);
@@ -50,7 +52,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 			pthread_cond_destroy(&sch->cond_running);
 
 		free(sch);
-		return ERROR;
+		return ERROR_;
 	}
 
 	pthread_mutexattr_init(&attr);
@@ -69,7 +71,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 		if (ret2 && !ret1)
 			pthread_mutex_destroy(&sch->mutex_running);
 		free(sch);
-		return ERROR;
+		return ERROR_;
 	}
 
 	return SUCCESS;
@@ -112,8 +114,6 @@ static void *thread_func(void *arg)
 	arg_th_func = *(th_func_arg_t *)arg;
 	free(arg);
 	node = arg_th_func.node;
-
-	sch->threads[node.index].thread_id = pthread_self();
 
 	pthread_mutex_lock(&sch->mutex_running);
 	while (sch->threads[node.index].state != RUNNING)
@@ -198,6 +198,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		pthread_mutex_unlock(&sch->mutex_running);
 		return INVALID_TID;
 	}
+	sch->threads[node.index].thread_id = thread_id;
 
 	if (sch->state != NOT_YET) {
 		if (node.priority > sch->threads[th_ind].priority) {
@@ -280,7 +281,7 @@ int so_wait(unsigned int io)
 	pthread_mutex_lock(&sch->mutex_running);
 	if (io >= sch->nr_events) {
 		pthread_mutex_unlock(&sch->mutex_running);
-		return ERROR;
+		return ERROR_;
 	}
 
 	pr_wait = remove_head(sch->ready_q);
@@ -358,7 +359,7 @@ int so_signal(unsigned int io)
 	pthread_mutex_lock(&sch->mutex_running);
 	if (io >= sch->nr_events) {
 		pthread_mutex_unlock(&sch->mutex_running);
-		return ERROR;
+		return ERROR_;
 	}
 
 	node = remove_head(sch->ready_q);
@@ -392,6 +393,8 @@ int so_signal(unsigned int io)
 
 void so_end(void)
 {
+	int ret;
+
 	if (!sch)
 		return;
 
@@ -401,8 +404,15 @@ void so_end(void)
 
 	pthread_mutex_unlock(&sch->mutex_end);
 
-	for (int i = 0; i < sch->nr_threads; ++i)
-		pthread_join(sch->threads[i].thread_id, NULL);
+	printf("nr_threads = %d\n", sch->nr_threads);
+	for (int i = 0; i < sch->nr_threads; ++i) {
+		ret = pthread_join(sch->threads[i].thread_id, NULL);
+		printf("thread_id = %lu\n", sch->threads[i].thread_id);
+		if (ret)
+			printf("pthread_join failed.\n");
+		else
+			printf("Avem un succes.\n");
+	}
 
 	destroy(sch->ready_q);
 	free(sch->ready_q);

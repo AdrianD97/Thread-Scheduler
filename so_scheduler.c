@@ -134,8 +134,6 @@ static DWORD WINAPI thread_func(LPVOID arg)
 	free(arg);
 	node = arg_th_func.node;
 
-	sch->threads[node.index].thread_id = GetThreadId();
-
 	LOCK(&sch->mutex_running);
 	while (sch->threads[node.index].state != RUNNING)
 #ifdef __linux__
@@ -184,7 +182,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 #ifdef __linux__
 	int ret;
 #else
-	HANDLE ret;
+	HANDLE handle;
 #endif /* __linux__ */
 	tid_t thread_id;
 	Node node, preempt;
@@ -234,8 +232,9 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		UNLOCK(&sch->mutex_running);
 		return INVALID_TID;
 	}
+	sch->threads[node.index].thread_id = thread_id;
 #else
-	ret = CreateThread(
+	handle = CreateThread(
 		NULL,
 		0,
 		thread_func,
@@ -247,6 +246,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		UNLOCK(&sch->mutex_running);
 		return INVALID_TID;
 	}
+	sch->threads[node.index].thread_id = handle;
 #endif /* __linux__ */
 
 	if (sch->state != NOT_YET) {

@@ -6,7 +6,7 @@
 #include "../PriorityQueue/PriorityQueue.h"
 
 #define SUCCESS	0
-#define ERROR	(-1)
+#define ERROR_	(-1)
 #define MAX_THREADS	10000
 #define INVALID_INDEX	(-1)
 #define INVALID_EVENT	(-1)
