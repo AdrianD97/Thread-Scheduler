@@ -105,10 +105,12 @@ void func(unsigned int p)
 
 void func_(unsigned int p)
 {
+	tid_t t_id;
+
 	so_exec();
 
 	so_exec();
-	tid_t t_id = so_fork(&func, 1);
+	t_id = so_fork(&func, 1);
 
 	printf("[FUNC_]: Primul apel a lui so_fork a intors: %lu\n", t_id);
 
@@ -249,7 +251,9 @@ void func_(unsigned int p)
 
 void f2(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_, 0);
+	tid_t t_id;
+
+	t_id = so_fork(&func_, 0);
 
 	printf("[F2]: primul apel al lui so_fork a intors %lu\n", t_id);
 
@@ -322,7 +326,9 @@ void f2(unsigned int p)
 
 void f1(unsigned int p)
 {
-	tid_t t_id = so_fork(&func_, 2);
+	tid_t t_id;
+	
+	t_id = so_fork(&func_, 2);
 
 	printf("[F1]: primul apel al lui so_fork a intors %lu\n", t_id);
 
@@ -435,7 +441,9 @@ void f3(unsigned int p)
 
 void f4(unsigned int p)
 {
-	tid_t t_id = so_fork(&f3, 3);
+	tid_t t_id;
+
+	t_id = so_fork(&f3, 3);
 
 	printf("[F4]: primul apel al lui so_fork a intors %lu\n", t_id);
 
@@ -475,11 +483,13 @@ void h3(unsigned int p)
 
 void h1(unsigned int p)
 {
+	tid_t t_id;
+
 	so_exec();
 
 	printf("[H1]: primul apel a lui so_signal a intors %d\n", so_signal(3));
 
-	tid_t t_id = so_fork(&h3, 1);
+	t_id = so_fork(&h3, 1);
 
 	printf("[H1]: primul apel al lui so_fork a intors %lu\n", t_id);
 
@@ -501,9 +511,11 @@ void h2(unsigned int p)
 
 void h0(unsigned int p)
 {
+	tid_t t_id;
+	
 	so_exec();
 
-	tid_t t_id = so_fork(&h2, 2);
+	t_id = so_fork(&h2, 2);
 
 	printf("[H0]: primul apel al lui so_fork a intors %lu\n", t_id);
 
@@ -516,7 +528,8 @@ void h0(unsigned int p)
 
 void for_function(unsigned int p)
 {
-	for (int i = 0; i < 100; ++i) {
+int i;
+	for (i = 0; i < 100; ++i) {
 		so_exec();
 
 		so_exec();
@@ -529,19 +542,20 @@ int main(int argc, char const *argv[])
 {
 	unsigned int q = 2;
 	unsigned int io = 20;
+	tid_t t_id;
 
 	if (so_init(q, io) == -1) {
 		printf("ERROR: so_init() failed.\n");
 		return -1;
 	}
 
-	// tid_t t_id = so_fork(&h0, 0);
-
-	// printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
-
-	tid_t t_id = so_fork(&for_function, 0);
+	t_id = so_fork(&h0, 0);
 
 	printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
+
+	/*t_id = so_fork(&for_function, 0);
+
+	printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);*/
 
 	so_end();
 	return 0;
