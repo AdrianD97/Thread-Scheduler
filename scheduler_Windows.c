@@ -73,7 +73,7 @@ static void preempt_crt_thread(unsigned int crt_ind,
 	block(crt_ind);
 }
 
-static DWORD WINAPI thread_func(LPVOID arg) 
+static DWORD WINAPI thread_func(LPVOID arg)
 {
 	Node node;
 	Node const *pr;
@@ -166,7 +166,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		NULL,
 		0,
 		thread_func,
-		arg,                        
+		arg,
 		0,
 		&thread_id
 	);
@@ -377,12 +377,13 @@ void so_end(void)
 
 	EnterCriticalSection(&sch->mutex_end);
 	while (sch->nr_threads && sch->state != END)
-		SleepConditionVariableCS(&sch->cond_end, &sch->mutex_end, INFINITE);
+		SleepConditionVariableCS(&sch->cond_end,
+			&sch->mutex_end, INFINITE);
 
 	LeaveCriticalSection(&sch->mutex_end);
 
 	printf("nr_threads = %d.\n", sch->nr_threads);
-	for (i = 0; i < sch->nr_threads; ++i){
+	for (i = 0; i < sch->nr_threads; ++i) {
 		ret = CloseHandle(sch->threads[i].thread_id);
 		if (ret == FALSE)
 			printf("CloseHandle failed.\n");

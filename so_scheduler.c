@@ -123,7 +123,7 @@ static void preempt_crt_thread(unsigned int crt_ind,
 #ifdef __linux__
 static void *thread_func(void *arg)
 #else
-static DWORD WINAPI thread_func(LPVOID arg) 
+static DWORD WINAPI thread_func(LPVOID arg)
 #endif /* __linux__ */
 {
 	Node node;
@@ -238,7 +238,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		NULL,
 		0,
 		thread_func,
-		arg,                        
+		arg,
 		0,
 		&thread_id
 	);
@@ -451,7 +451,7 @@ void so_end(void)
 	while (sch->nr_threads && sch->state != END)
 #ifdef __linux__
 		WAIT(&sch->cond_end, &sch->mutex_end);
-#else		
+#else
 		WAIT(&sch->cond_end, &sch->mutex_end, INFINITE);
 #endif /* __linux__ */
 

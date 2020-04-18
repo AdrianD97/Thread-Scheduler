@@ -174,7 +174,6 @@ void func_(unsigned int p)
 
 	so_exec();
 
-	/////
 	so_exec();
 
 	so_exec();
@@ -327,7 +326,7 @@ void f2(unsigned int p)
 void f1(unsigned int p)
 {
 	tid_t t_id;
-	
+
 	t_id = so_fork(&func_, 2);
 
 	printf("[F1]: primul apel al lui so_fork a intors %lu\n", t_id);
@@ -512,7 +511,7 @@ void h2(unsigned int p)
 void h0(unsigned int p)
 {
 	tid_t t_id;
-	
+
 	so_exec();
 
 	t_id = so_fork(&h2, 2);
@@ -553,9 +552,11 @@ int main(int argc, char const *argv[])
 
 	printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
 
-	/*t_id = so_fork(&for_function, 0);
+	/*
+	 * t_id = so_fork(&for_function, 0);
 
-	printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);*/
+	 * printf("[MAIN]: Apelul de so_fork a intors: %lu\n", t_id);
+	 */
 
 	so_end();
 	return 0;
