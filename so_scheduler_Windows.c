@@ -1,6 +1,3 @@
-#include <stdio.h>
-
-
 #include "so_scheduler.h"
 #include "utils/utils.h"
 

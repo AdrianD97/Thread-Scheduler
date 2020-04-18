@@ -1,12 +1,53 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#ifdef __linux__
 #include <pthread.h>
 
-#include "../PriorityQueue/PriorityQueue.h"
+typedef void* RET_FUNC_T;
+typedef void* ARG_FUNC_T;
 
+typedef pthread_t THREAD_ID;
+typedef pthread_cond_t CONDITION;
+typedef pthread_mutex_t MUTEX;
+
+#define WAIT pthread_cond_wait
+#define SIGNAL pthread_cond_signal
+#define BROADCAST pthread_cond_broadcast
+
+#define LOCK pthread_mutex_lock
+#define UNLOCK pthread_mutex_unlock
+#define DESTROY_LOCK pthread_mutex_destroy
+
+#define GetThreadId pthread_self
+
+#define RET_VAL NULL
+#else
+#include <windows.h>
+
+typedef DWORD WINAPI RET_FUNC_T;
+typedef LPVOID ARG_FUNC_T;
+
+typedef HANDLE THREAD_ID;
+typedef CONDITION_VARIABLE CONDITION;
+typedef CRITICAL_SECTION MUTEX;
+
+#define WAIT SleepConditionVariableCS
+#define SIGNAL WakeConditionVariable
+#define BROADCAST WakeAllConditionVariable
+
+#define LOCK EnterCriticalSection
+#define UNLOCK LeaveCriticalSection
+#define DESTROY_LOCK DeleteCriticalSection
+
+#define GetThreadId GetCurrentThread
+
+#define RET_VAL 0
+#endif /* __linux__ */
+
+#include "../PriorityQueue/PriorityQueue.h"
 #define SUCCESS	0
-#define ERROR	(-1)
+#define ERROR_	(-1)
 #define MAX_THREADS	10000
 #define INVALID_INDEX	(-1)
 #define INVALID_EVENT	(-1)
@@ -39,7 +80,7 @@ typedef struct {
 	STATE state;
 	int event;
 	unsigned char preempted;
-	pthread_t thread_id;
+	THREAD_ID thread_id;
 } thread_t;
 
 typedef struct {
@@ -50,10 +91,10 @@ typedef struct {
 	unsigned int timestamp;
 	thread_t *threads;
 	PriorityQueue *ready_q;
-	pthread_cond_t cond_running;
-	pthread_mutex_t mutex_running;
-	pthread_cond_t cond_end;
-	pthread_mutex_t mutex_end;
+	CONDITION cond_running;
+	MUTEX mutex_running;
+	CONDITION cond_end;
+	MUTEX mutex_end;
 } scheduler_t;
 
-#endif // UTILS_H
+#endif /* UTILS_H */
