@@ -1,5 +1,7 @@
+#include <stdio.h>
+
 #include "so_scheduler.h"
-#include "utils/utils.h"
+#include "utils_Windows/utils.h"
 
 
 static scheduler_t *sch;
@@ -80,8 +82,6 @@ static DWORD WINAPI thread_func(LPVOID arg)
 	arg_th_func = *(th_func_arg_t *)arg;
 	free(arg);
 	node = arg_th_func.node;
-
-	sch->threads[node.index].thread_id = GetCurrentThread();
 
 	EnterCriticalSection(&sch->mutex_running);
 	while (sch->threads[node.index].state != RUNNING)
@@ -174,6 +174,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		LeaveCriticalSection(&sch->mutex_running);
 		return INVALID_TID;
 	}
+	sch->threads[node.index].thread_id = ret;
 
 	if (sch->state != NOT_YET) {
 		if (node.priority > sch->threads[th_ind].priority) {
@@ -369,6 +370,7 @@ int so_signal(unsigned int io)
 void so_end(void)
 {
 	unsigned int i;
+	BOOL ret;
 
 	if (!sch)
 		return;
@@ -379,8 +381,14 @@ void so_end(void)
 
 	LeaveCriticalSection(&sch->mutex_end);
 
-	for (i = 0; i < sch->nr_threads; ++i)
-		CloseHandle(sch->threads[i].thread_id);
+	printf("nr_threads = %d.\n", sch->nr_threads);
+	for (i = 0; i < sch->nr_threads; ++i){
+		ret = CloseHandle(sch->threads[i].thread_id);
+		if (ret == FALSE)
+			printf("CloseHandle failed.\n");
+		else
+			printf("Avem un success\n");
+	}
 
 	destroy(sch->ready_q);
 	free(sch->ready_q);
