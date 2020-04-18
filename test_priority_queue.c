@@ -5,9 +5,13 @@
 
 void test_priority_queue(void)
 {
-	printf("Start test.\n");
-
 	Node node1, node2, node3, node4, node5, node6, node7;
+	Node const *head_;
+	Node root;
+	PriorityQueue *priorityQueue;
+	int size = 10;
+
+	printf("Start test.\n");
 
 	node1.index = 0;
 	node1.priority = 3;
@@ -36,11 +40,6 @@ void test_priority_queue(void)
 	node7.index = 6;
 	node7.priority = 8;
 	node7.timestamp = 0;
-
-	Node const *head_;
-	Node root;
-	PriorityQueue *priorityQueue;
-	int size = 10;
 
 	priorityQueue = createPriorityQueue(size);
 	assert(priorityQueue != NULL);

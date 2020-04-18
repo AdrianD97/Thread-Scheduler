@@ -1,4 +1,4 @@
-test_scheduler: test_so_scheduler.c so_scheduler_Windows.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
+test_scheduler: test_scheduler.c scheduler_Windows.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
 	cl /MD $** /Fe$@
 
 clean:

@@ -242,7 +242,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		0,
 		&thread_id
 	);
-	if (ret == NULL) {
+	if (handle == NULL) {
 		UNLOCK(&sch->mutex_running);
 		return INVALID_TID;
 	}

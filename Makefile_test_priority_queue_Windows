@@ -1,0 +1,5 @@
+test_priority_queue: test_priority_queue.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
+	cl /MD $** /Fe$@
+
+clean:
+	del /Q /s test_priority_queue.exe *.obj
