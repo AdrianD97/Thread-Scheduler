@@ -120,7 +120,11 @@ static void preempt_crt_thread(unsigned int crt_ind,
 	block(crt_ind);
 }
 
-static RET_FUNC_T thread_func(ARG_FUNC_T arg)
+#ifdef __linux__
+static void *thread_func(void *arg)
+#else
+static DWORD WINAPI thread_func(LPVOID arg) 
+#endif /* __linux__ */
 {
 	Node node;
 	Node const *pr;

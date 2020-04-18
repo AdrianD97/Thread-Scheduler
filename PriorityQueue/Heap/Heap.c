@@ -77,12 +77,12 @@ Node const *getHeapRoot(const Heap *heap)
 
 static void pushDown(Heap *heap, int type)
 {
-	if (heap->index == 0)
-		return;
-
 	int index = ROOT, result;
 	int child_ind, result_;
 	Node tmp;
+
+	if (heap->index == 0)
+		return;
 
 	do {
 		if (2 * index <= heap->index) {

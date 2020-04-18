@@ -4,9 +4,6 @@
 #ifdef __linux__
 #include <pthread.h>
 
-typedef void* RET_FUNC_T;
-typedef void* ARG_FUNC_T;
-
 typedef pthread_t THREAD_ID;
 typedef pthread_cond_t CONDITION;
 typedef pthread_mutex_t MUTEX;
@@ -24,9 +21,6 @@ typedef pthread_mutex_t MUTEX;
 #define RET_VAL NULL
 #else
 #include <windows.h>
-
-typedef DWORD WINAPI RET_FUNC_T;
-typedef LPVOID ARG_FUNC_T;
 
 typedef HANDLE THREAD_ID;
 typedef CONDITION_VARIABLE CONDITION;
