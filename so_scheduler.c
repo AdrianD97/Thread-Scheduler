@@ -140,7 +140,7 @@ static void *thread_func(void *arg)
 	} else {
 		pthread_mutex_lock(&sch->mutex_end);
 		sch->state = END;
-		pthread_cond_broadcast(&sch->cond_end);
+		pthread_cond_signal(&sch->cond_end);
 		pthread_mutex_unlock(&sch->mutex_end);
 	}
 	pthread_mutex_unlock(&sch->mutex_running);
