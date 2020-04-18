@@ -4,33 +4,36 @@
 #define SUCC	0
 #define ERR     1
 
-#define MAX_SIZE	200
+#define MAX_SIZE	500
 
 #define SEEK_SET	0
 #define SEEK_END	2
 
-#ifdef __WIN32
-#include <windows.h>
-#define END_LINE	"\r\n"
-#else
+#ifdef __linux__
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
 #define END_LINE	"\n"
-#endif /* __WIN32 */
+#else
+#include <windows.h>
+
+#define END_LINE	"\r\n"
+#endif /* __linux__ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 typedef struct {
-#ifdef __WIN32
-	HANDLE h;
-#else
+#ifdef __linux__
 	int fd;
-#endif /* __WIN32 */
+#else
+	HANDLE h;
+#endif /* __linux__ */
 	int contor;
 } Logger;
 
@@ -44,11 +47,6 @@ Logger *create_logger(char *file_name);
  * write a message to log file.
  */
 int logg(Logger *const logger, char *message);
-
-/*
- * display log file content.
- */
-void history(const Logger *const logger);
 
 /*
  * free logger resources.

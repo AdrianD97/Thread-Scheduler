@@ -37,21 +37,23 @@ Logger *create_logger(char *file_name)
 	if (!logger)
 		return NULL;
 
-#ifdef __WIN32
+#ifdef __linux__
+	logger->fd = open(file_name, O_CREAT | O_WRONLY | O_TRUNC);
+	if (logger->fd < 0)
+		err_flag = 1;
+#else
 	logger->h = CreateFile(
 		(LPCSTR)file_name,
-		GENERIC_READ | GENERIC_WRITE,
+		GENERIC_WRITE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
 		NULL,
 		CREATE_ALWAYS,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL
 	);
-#else
-	logger->fd = open(file_name, O_CREAT | O_RDWR | O_TRUNC);
-	if (logger->fd < 0)
+	if (logger->h == INVALID_HANDLE_VALUE)
 		err_flag = 1;
-#endif /* __WIN32 */
+#endif /* __linux__ */
 
 	if (err_flag) {
 		free(logger);
@@ -62,52 +64,42 @@ Logger *create_logger(char *file_name)
 	return logger;
 }
 
-static int set_position(const Logger * const logger,
-	int offset, unsigned int whence)
-{
-#ifdef __WIN32
-	DWORD pos;
-
-	pos = SetFilePointer(logger->h, offset,
-		NULL, (DWORD)whence);
-	if (pos == INVALID_SET_FILE_POINTER)
-		return -ERR;
-#else
-	int pos;
-
-	pos = lseek(logger->fd, offset, whence);
-	if (pos < 0)
-		return -ERR;
-#endif /* __WIN32 */
-
-	return SUCC;
-}
-
 int logg(Logger *const logger, char *message)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 	BOOL ret;
-#endif /* __WIN32 */
+#endif /* _WIN32 */
 
 	char final_message[MAX_SIZE];
-	int length, res;
+	int length;
 	int index, bytes_written;
+	time_t ts;
+	struct tm *t;
 
 	if (!message)
 		return -ERR;
 
-	sprintf(final_message, "%d\t%s%s", logger->contor, message, END_LINE);
+	/*
+	 * TODO: Sa adaug si data si ora curenta in mesaj
+	 */
+	ts = time(NULL);
+	t = gmtime((const time_t *)&ts);
+	sprintf(final_message, "%d\t%d-%d-%d %d:%d:%d\t%s%s",
+		logger->contor, t->tm_mday, t->tm_mon,
+		1900 + t->tm_year, t->tm_hour, t->tm_min,
+		t->tm_sec, message, END_LINE);
 	++logger->contor;
 	length = strlen(final_message);
 	index = 0;
 
-
-	res = set_position(logger, 0, SEEK_END);
-	if (res == -ERR)
-		return -ERR;
-
 	while (length > 0) {
-#ifdef __WIN32
+#ifdef __linux__
+		bytes_written = write(logger->fd,
+			&final_message[index], length);
+
+		if (bytes_written < 0)
+			return -ERR;
+#else
 		ret = WriteFile(
 			logger->h,
 		    &final_message[index],
@@ -118,13 +110,7 @@ int logg(Logger *const logger, char *message)
 
 		if (ret == FALSE)
 			return -ERR;
-#else
-		bytes_written = write(logger->fd,
-			&final_message[index], length);
-
-		if (bytes_written < 0)
-			return -ERR;
-#endif /* __WIN32 */
+#endif /* __linux__ */
 
 		index += bytes_written;
 		length -= bytes_written;
@@ -133,49 +119,9 @@ int logg(Logger *const logger, char *message)
 	return SUCC;
 }
 
-void history(const Logger *const logger)
-{
-#ifdef __WIN32
-	BOOL ret;
-#endif /* __WIN32 */
-
-	char buff[MAX_SIZE];
-	int bytes_read, res;
-
-	res = set_position(logger, 0, SEEK_SET);
-	if (res == -ERR)
-		return;
-
-	while (1) {
-#ifdef __WIN32
-		ret = ReadFile(
-			logger->h,
-		    buff,
-			MAX_SIZE - 1,
-		    &bytes_read,
-		    NULL
-		);
-
-		if (ret == FALSE)
-			return;
-#else
-		bytes_read = read(logger->fd, buff, MAX_SIZE - 1);
-		if (bytes_read < 0)
-			return;
-#endif /* __WIN32 */
-
-		if (!bytes_read)
-			break;
-
-		buff[bytes_read] = '\0';
-		printf("%s", buff);
-	}
-	printf(END_LINE);
-}
-
 int destroy_logger(Logger *logger)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 	BOOL rc;
 #endif /* __WIN32 */
 	int ret;
@@ -183,12 +129,12 @@ int destroy_logger(Logger *logger)
 	if (!logger)
 		return -ERR;
 
-#ifdef __WIN32
+#ifdef __linux__
+	ret = close(logger->fd);
+#else
 	rc = CloseHandle(logger->h);
 	ret = (rc == FALSE) ? -ERR : SUCC;
-#else
-	ret = close(logger->fd);
-#endif /* __WIN32 */
+#endif /* __linux__ */
 
 	free(logger);
 
