@@ -38,7 +38,7 @@ Logger *create_logger(char *file_name)
 		return NULL;
 
 #ifdef __linux__
-	logger->fd = open(file_name, O_CREAT | O_WRONLY | O_TRUNC);
+	logger->fd = open(file_name, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (logger->fd < 0)
 		err_flag = 1;
 #else
