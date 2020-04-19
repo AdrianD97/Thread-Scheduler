@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-#include "../PriorityQueue/PriorityQueue.h"
+#include "../../PriorityQueue/PriorityQueue.h"
 
 #define SUCCESS	0
 #define ERROR_	(-1)

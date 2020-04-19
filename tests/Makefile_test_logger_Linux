@@ -1,4 +1,4 @@
-test_logger: test_logger.c Logger/Logger.c
+test_logger: test_logger.c ../Logger/Logger.c
 	gcc -Wall $^ -o $@
 
 clean:

@@ -1,0 +1,7 @@
+CFLAGS = /nologo /W4 /EHsc /Za
+
+test_scheduler: test_scheduler.c scheduler_Windows.c ../../PriorityQueue/PriorityQueue.c ../../PriorityQueue/Heap/Heap.c ../../PriorityQueue/Heap/heap_util.c
+	cl $(CFLAGS) /Fe$@ $**
+
+clean:
+	del /Q /s test_scheduler.exe *.obj

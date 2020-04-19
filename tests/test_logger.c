@@ -13,7 +13,7 @@
 #define FACTOR	1000
 #endif /* __linux */
 
-#include "Logger/Logger.h"
+#include "../Logger/Logger.h"
 
 void test_logger(void)
 {

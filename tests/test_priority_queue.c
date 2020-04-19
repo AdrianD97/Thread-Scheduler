@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "PriorityQueue/PriorityQueue.h"
+#include "../PriorityQueue/PriorityQueue.h"
 
 void test_priority_queue(void)
 {

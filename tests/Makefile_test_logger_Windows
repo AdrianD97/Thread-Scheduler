@@ -1,0 +1,7 @@
+CFLAGS = /nologo /W4 /EHsc /Za
+
+test_logger: test_logger.c ../Logger/Logger.c
+	cl $(CFLAGS) /Fe$@ $**
+
+clean:
+	del /Q /s test_logger.exe *.obj file.log

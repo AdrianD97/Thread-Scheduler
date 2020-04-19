@@ -1,5 +1,0 @@
-test_scheduler: test_scheduler.c scheduler_Linux.c PriorityQueue/PriorityQueue.c PriorityQueue/Heap/Heap.c PriorityQueue/Heap/heap_util.c
-	gcc -Wall $^ -o $@ -lpthread
-
-clean:
-	rm -f test_scheduler *.o
