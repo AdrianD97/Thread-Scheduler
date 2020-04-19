@@ -55,30 +55,30 @@ void h0(unsigned int p)
 	so_exec();
 }
 
-void test_init_params_quantum()
+void test_init_params_quantum(void)
 {
-	printf("test_init_params_quantum\n");
+	printf("%s\n", __func__);
 	so_init(0, 0, 1);
 	so_end();
 }
 
-void test_init_params_io()
+void test_init_params_io(void)
 {
-	printf("test_init_params_io\n");
+	printf("%s\n", __func__);
 	so_init(1, SO_MAX_NUM_EVENTS + 1, 1);
 	so_end();
 }
 
-void test_init()
+void test_init(void)
 {
-	printf("test_init\n");
+	printf("%s\n", __func__);
 	so_init(5, 0, 1);
 	so_end();
 }
 
-void test_already_exists()
+void test_already_exists(void)
 {
-	printf("test_already_exists\n");
+	printf("%s\n", __func__);
 	so_init(5, 0, 1);
 
 	so_init(7, 0, 1);
@@ -86,13 +86,13 @@ void test_already_exists()
 	so_end();
 }
 
-void test_scheduler_with_logger_enabled()
+void test_scheduler_with_logger_enabled(void)
 {
 	unsigned int q = 2;
 	unsigned int io = 20;
 	tid_t t_id;
 
-	printf("test_scheduler_with_logger_enabled\n");
+	printf("%s\n", __func__);
 	if (so_init(q, io, 1) == -1) {
 		printf("ERROR: so_init() failed.\n");
 		return;
@@ -105,13 +105,13 @@ void test_scheduler_with_logger_enabled()
 	so_end();
 }
 
-void test_scheduler_without_logger_enabled()
+void test_scheduler_without_logger_enabled(void)
 {
 	unsigned int q = 2;
 	unsigned int io = 20;
 	tid_t t_id;
 
-	printf("test_scheduler_without_logger_enabled\n");
+	printf("%s\n", __func__);
 	if (so_init(q, io, 0) == -1) {
 		printf("ERROR: so_init() failed.\n");
 		return;
@@ -133,17 +133,28 @@ int main(int argc, char const *argv[])
 		printf("Usage: ./test_so_scheduler test_number\n");
 		return -1;
 	}
-	
+
 	test_case = atoi(argv[1]);
 
 	switch (test_case) {
-		case 0: test_init_params_quantum(); break;
-		case 1: test_init_params_io(); break;
-		case 2: test_init(); break;
-		case 3: test_already_exists(); break;
-		case 4: test_scheduler_without_logger_enabled(); break;
-		default: test_scheduler_with_logger_enabled();
+	case 0:
+		test_init_params_quantum();
+		break;
+	case 1:
+		test_init_params_io();
+		break;
+	case 2:
+		test_init();
+		break;
+	case 3:
+		test_already_exists();
+		break;
+	case 4:
+		test_scheduler_without_logger_enabled();
+		break;
+	default:
+		test_scheduler_with_logger_enabled();
 	}
-	
+
 	return 0;
 }

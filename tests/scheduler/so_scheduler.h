@@ -59,7 +59,8 @@ typedef void (so_handler)(unsigned int);
  * + number of IO devices supported
  * returns: 0 on success or negative on error
  */
-DECL_PREFIX int so_init(unsigned int time_quantum, unsigned int io, bool enable);
+DECL_PREFIX int so_init(unsigned int time_quantum,
+	unsigned int io, bool enable);
 
 /*
  * creates a new so_task_t and runs it according to the scheduler

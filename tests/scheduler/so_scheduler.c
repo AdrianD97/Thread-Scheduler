@@ -30,7 +30,8 @@ int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 		sch->logger = NULL;
 
 	if (!time_quantum || (io > SO_MAX_NUM_EVENTS)) {
-		LOG("Failed to initialize scheduler: time quantum or io has invalid value");
+		LOG("Failed to initialize scheduler: time "
+			"quantum or io has invalid value");
 		destroy_logger(sch->logger);
 		free(sch);
 		sch = NULL;
@@ -44,7 +45,8 @@ int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 
 	sch->threads = (thread_t *)malloc(MAX_THREADS * sizeof(thread_t));
 	if (!sch->threads) {
-		LOG("Failed to initialize scheduler: can not alloc memory for threads array.");
+		LOG("Failed to initialize scheduler: can not "
+			"alloc memory for threads array.");
 		destroy_logger(sch->logger);
 		free(sch);
 		sch = NULL;
@@ -53,7 +55,8 @@ int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 
 	sch->ready_q = createPriorityQueue(MAX_THREADS);
 	if (!sch->ready_q) {
-		LOG("Failed to initialize scheduler: can not create ready queue.");
+		LOG("Failed to initialize scheduler: can not "
+			"create ready queue.");
 		destroy_logger(sch->logger);
 		free(sch->threads);
 		free(sch);
@@ -69,7 +72,8 @@ int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 		free(sch->ready_q);
 		free(sch->threads);
 
-		LOG("Failed to initialize scheduler: can not create cond sync elems.");
+		LOG("Failed to initialize scheduler: can not "
+			"create cond sync elems.");
 		destroy_logger(sch->logger);
 
 		if (ret1 && !ret2)
@@ -91,7 +95,8 @@ int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 		pthread_cond_destroy(&sch->cond_running);
 		pthread_cond_destroy(&sch->cond_end);
 
-		LOG("Failed to initialize scheduler: can not create mutex sync elems.");
+		LOG("Failed to initialize scheduler: can not "
+			"create mutex sync elems.");
 		destroy_logger(sch->logger);
 
 		if (ret1 && !ret2)
@@ -204,7 +209,8 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	preempted = 0;
 
 	if (!func || (priority > SO_MAX_PRIO)) {
-		LOG("Failed to create a new thread: Invalid handler or priority.");
+		LOG("Failed to create a new thread: "
+			"Invalid handler or priority.");
 		return INVALID_TID;
 	}
 
@@ -221,7 +227,8 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	else {
 		pr = head(sch->ready_q);
 		if (!pr) {
-			LOG("Failed to create new thread: The ready queue is empty.");
+			LOG("Failed to create new thread: "
+				"The ready queue is empty.");
 			return INVALID_TID;
 		}
 		th_ind = pr->index;
@@ -321,7 +328,8 @@ void so_exec(void)
 
 	pr = head(sch->ready_q);
 	if (!pr) {
-		LOG("Failed to execute so_exec instruction: ready queue is empty.");
+		LOG("Failed to execute so exec instruction: "
+			"ready queue is empty.");
 		return;
 	}
 	th_ind = pr->index;
@@ -353,7 +361,7 @@ int so_wait(unsigned int io)
 	Node const *pr;
 
 	if (io >= sch->nr_events) {
-		LOG("Failed to execute so_wait: The event is invalid.");
+		LOG("Failed to execute so wait: The event is invalid.");
 		return ERROR_;
 	}
 
@@ -429,7 +437,7 @@ int so_signal(unsigned int io)
 
 	preempted = 0;
 	if (io >= sch->nr_events) {
-		LOG("Failed to execute so_signal: The event is invalid.");
+		LOG("Failed to execute so signal: The event is invalid.");
 		return ERROR_;
 	}
 
