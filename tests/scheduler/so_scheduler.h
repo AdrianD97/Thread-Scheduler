@@ -28,7 +28,7 @@ typedef DWORD tid_t;
 #error "Unknown platform"
 #endif
 
-typedef int boolean;
+typedef int bool;
 
 /*
  * the maximum priority that can be assigned to a thread
@@ -59,7 +59,7 @@ typedef void (so_handler)(unsigned int);
  * + number of IO devices supported
  * returns: 0 on success or negative on error
  */
-DECL_PREFIX int so_init(unsigned int time_quantum, unsigned int io, boolean enable);
+DECL_PREFIX int so_init(unsigned int time_quantum, unsigned int io, bool enable);
 
 /*
  * creates a new so_task_t and runs it according to the scheduler

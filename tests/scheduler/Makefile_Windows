@@ -1,4 +1,4 @@
-CFLAGS = /nologo /W3 /EHsc
+CFLAGS = /MD /nologo
 CC = cl
 LINK = link
 
@@ -26,4 +26,4 @@ test_so_scheduler.obj: test_so_scheduler.c
 	$(CC) $(CFLAGS) /Fo$@ /c $**
 
 clean:
-	del /Q test_so_scheduler.exe *.obj scheduler.log 2>NUL
+	del /Q test_so_scheduler.exe *.obj test_so_scheduler.lib test_so_scheduler.exp scheduler.log 2>NUL

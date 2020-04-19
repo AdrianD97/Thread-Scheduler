@@ -13,7 +13,7 @@ static void LOG(char *message)
 		logg(sch->logger, message);
 }
 
-int so_init(unsigned int time_quantum, unsigned int io, boolean enable)
+int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 {
 #ifdef __linux__
 	int ret1, ret2;
