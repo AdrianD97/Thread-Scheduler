@@ -1,6 +1,6 @@
-CFLAGS = /nologo /W4 /EHsc /Za
+CFLAGS = /MD /nologo
 
-test_logger: test_logger.c ../Logger/Logger.c
+test_logger.exe: test_logger.c ../Logger/Logger.c
 	cl $(CFLAGS) /Fe$@ $**
 
 clean:

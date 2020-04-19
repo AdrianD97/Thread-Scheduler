@@ -1,6 +1,6 @@
-CFLAGS = /nologo /W4 /EHsc /Za
+CFLAGS = /MD /nologo
 
-test_priority_queue: test_priority_queue.c ../PriorityQueue/PriorityQueue.c ../PriorityQueue/Heap/Heap.c ../PriorityQueue/Heap/heap_util.c
+test_priority_queue.exe: test_priority_queue.c ../PriorityQueue/PriorityQueue.c ../PriorityQueue/Heap/Heap.c ../PriorityQueue/Heap/heap_util.c
 	cl $(CFLAGS) /Fe$@ $**
 
 clean:
