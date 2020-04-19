@@ -527,7 +527,8 @@ void h0(unsigned int p)
 
 void for_function(unsigned int p)
 {
-int i;
+	int i;
+
 	for (i = 0; i < 100; ++i) {
 		so_exec();
 

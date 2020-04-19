@@ -1,0 +1,31 @@
+CC = gcc
+CFLAGS = -Wall
+LIB = -lpthread
+
+.PHONY: build
+build: test_so_scheduler
+
+test_so_scheduler: test_so_scheduler.c so_scheduler.o Logger.o PriorityQueue.o Heap.o heap_util.o
+	$(CC) -o $@ $^ $(LIB)
+
+heap_util.o: ../../PriorityQueue/Heap/heap_util.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+Heap.o: ../../PriorityQueue/Heap/Heap.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+PriorityQueue.o: ../../PriorityQueue/PriorityQueue.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+Logger.o: ../../Logger/Logger.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+so_scheduler.o: so_scheduler.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+test_so_scheduler.o: test_so_scheduler.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+.PHONY: clean
+clean:
+	rm -f test_so_scheduler *.o scheduler.log

@@ -1,0 +1,29 @@
+CFLAGS = /nologo /W3 /EHsc
+CC = cl
+LINK = link
+
+build: test_so_scheduler.exe
+
+test_so_scheduler.exe: test_so_scheduler.obj so_scheduler.obj Logger.obj PriorityQueue.obj Heap.obj heap_util.obj
+	$(LINK) /nologo /out:$@ $**
+
+heap_util.obj: ../../PriorityQueue/Heap/heap_util.c
+	$(CC) $(CFLAGS) /Fo$@ /c $**
+
+Heap.obj: ../../PriorityQueue/Heap/Heap.c
+	$(CC) $(CFLAGS) /Fo$@ /c $**
+	
+PriorityQueue.obj: ../../PriorityQueue/PriorityQueue.c
+	$(CC) $(CFLAGS) /Fo$@ /c $**
+
+Logger.obj: ../../Logger/Logger.c
+	$(CC) $(CFLAGS) /Fo$@ /c $**
+	
+so_scheduler.obj: so_scheduler.c
+	$(CC) $(CFLAGS) /Fo$@ /c $**
+
+test_so_scheduler.obj: test_so_scheduler.c
+	$(CC) $(CFLAGS) /Fo$@ /c $**
+
+clean:
+	del /Q test_so_scheduler.exe *.obj scheduler.log 2>NUL

@@ -1,33 +1,5 @@
 #include "Logger.h"
 
-/*
- * Ar trebui sa setez o limita pentru contor
- * Gen mai trbuie sa iau un parametru care sa imi spuna cate
- * intrari am pus
- * iar in momentul in care numarul de intraria atins o limita
- * maxima definita
- * va trebui sa sterg de la inceput o linie si sa adaug la sfarsit
- * noua linie venita
-
- * TODO: Alt feature ar fi cand dau clear la history sa
- * golsec fisierul si sa dau
- * contorului valoarea primei linii din fisierul pe
- * care il voi goli.
- * Deci as putea avea inca o variabila care retine tot
- * timpul id-ul data primei linii
- * Aceasta se va modifica, cand numarul de intrari se va
- * atinge, voi setrge prima linie
- * iar variabila va lua valorea +1(adica pt urmatoare linie
- * care devine prima)
- * iar cand dau clear sa devina variabila + 1, iar
- * contor o sa inceapa de la variabila + 1
- * MAI VEDEM DACA IMPLEMENTAM SI Aceasta
- */
-/*
- *TODO TODO  TODO: Voi aplica solutia cu stergere
- * fisier/golire fisier cand am atins numarul amxim
- * de intarri. :)))
- */
 Logger *create_logger(char *file_name)
 {
 	Logger *logger;
@@ -79,9 +51,6 @@ int logg(Logger *const logger, char *message)
 	if (!message)
 		return -ERR;
 
-	/*
-	 * TODO: Sa adaug si data si ora curenta in mesaj
-	 */
 	ts = time(NULL);
 	t = gmtime((const time_t *)&ts);
 	sprintf(final_message, "%d\t%d-%d-%d %d:%d:%d\t%s%s",
