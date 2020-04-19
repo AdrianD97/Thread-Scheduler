@@ -57,28 +57,28 @@ void h0(unsigned int p)
 
 void test_init_params_quantum(void)
 {
-	printf("%s\n", __func__);
+	printf("test init params quantum\n");
 	so_init(0, 0, 1);
 	so_end();
 }
 
 void test_init_params_io(void)
 {
-	printf("%s\n", __func__);
+	printf("test init params io\n");
 	so_init(1, SO_MAX_NUM_EVENTS + 1, 1);
 	so_end();
 }
 
 void test_init(void)
 {
-	printf("%s\n", __func__);
+	printf("test init\n");
 	so_init(5, 0, 1);
 	so_end();
 }
 
 void test_already_exists(void)
 {
-	printf("%s\n", __func__);
+	printf("test already exists\n");
 	so_init(5, 0, 1);
 
 	so_init(7, 0, 1);
@@ -92,7 +92,7 @@ void test_scheduler_with_logger_enabled(void)
 	unsigned int io = 20;
 	tid_t t_id;
 
-	printf("%s\n", __func__);
+	printf("test scheduler with logger enabled\n");
 	if (so_init(q, io, 1) == -1) {
 		printf("ERROR: so_init() failed.\n");
 		return;
@@ -111,7 +111,7 @@ void test_scheduler_without_logger_enabled(void)
 	unsigned int io = 20;
 	tid_t t_id;
 
-	printf("%s\n", __func__);
+	printf("test scheduler without logger enabled\n");
 	if (so_init(q, io, 0) == -1) {
 		printf("ERROR: so_init() failed.\n");
 		return;
