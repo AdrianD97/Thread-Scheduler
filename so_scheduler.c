@@ -1,10 +1,6 @@
 #include "so_scheduler.h"
 #include "utils/utils.h"
 
-#ifdef __linux__
-static pthread_mutexattr_t attr;
-#endif /* __linux__ */
-
 static scheduler_t *sch;
 
 int so_init(unsigned int time_quantum, unsigned int io)
@@ -58,9 +54,7 @@ int so_init(unsigned int time_quantum, unsigned int io)
 		return ERROR_;
 	}
 
-	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	ret1 = pthread_mutex_init(&sch->mutex_running, &attr);
+	ret1 = pthread_mutex_init(&sch->mutex_running, NULL);
 	ret2 = pthread_mutex_init(&sch->mutex_end, NULL);
 	if (ret1 | ret2) {
 		destroy(sch->ready_q);
@@ -90,10 +84,6 @@ int so_init(unsigned int time_quantum, unsigned int io)
 static void block(unsigned int index)
 {
 	BROADCAST(&sch->cond_running);
-	if (sch->threads[index].preempted == NO_PREEMPTED) {
-		sch->threads[index].preempted = PREEMPTED;
-		UNLOCK(&sch->mutex_running);
-	}
 
 	while (sch->threads[index].state != RUNNING)
 #ifdef __linux__
@@ -146,19 +136,6 @@ static DWORD WINAPI thread_func(LPVOID arg)
 
 	arg_th_func.func(node.priority);
 
-	if (sch->threads[node.index].preempted == PREEMPTED) {
-		LOCK(&sch->mutex_running);
-		while (sch->threads[node.index].state != RUNNING)
-#ifdef __linux__
-			WAIT(&sch->cond_running,
-				&sch->mutex_running);
-#else
-			WAIT(&sch->cond_running,
-				&sch->mutex_running, INFINITE);
-#endif /* __linux__ */
-		sch->threads[node.index].preempted = NO_PREEMPTED;
-	}
-
 	node = remove_head(sch->ready_q);
 	sch->threads[node.index].state = TERMINATED;
 
@@ -188,7 +165,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	Node node, preempt;
 	Node const *pr;
 	th_func_arg_t *arg;
-	int preempted, q;
+	int preempted, q, err_flag = 0;
 	unsigned int th_ind, index;
 
 	preempted = 0;
@@ -202,13 +179,13 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 
 	arg->func = func;
 
-	LOCK(&sch->mutex_running);
-	if (sch->state != NOT_YET) {
+	if (sch->state == NOT_YET)
+		LOCK(&sch->mutex_running);
+	else {
 		pr = head(sch->ready_q);
-		if (!pr) {
-			UNLOCK(&sch->mutex_running);
+		if (!pr)
 			return INVALID_TID;
-		}
+
 		th_ind = pr->index;
 	}
 
@@ -221,18 +198,14 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	sch->threads[node.index].c_t_qu = sch->t_qu;
 	sch->threads[node.index].state = NEW;
 	sch->threads[node.index].event = INVALID_EVENT;
-	sch->threads[node.index].preempted = NO_PREEMPTED;
 
 	sch->threads[node.index].state = READY;
 	add(sch->ready_q, node);
 
 #ifdef __linux__
 	ret = pthread_create(&thread_id, NULL, thread_func, (void *)arg);
-	if (ret) {
-		UNLOCK(&sch->mutex_running);
-		return INVALID_TID;
-	}
-	sch->threads[node.index].thread_id = thread_id;
+	if (ret)
+		err_flag = 1;
 #else
 	handle = CreateThread(
 		NULL,
@@ -242,10 +215,19 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		0,
 		&thread_id
 	);
-	if (handle == NULL) {
-		UNLOCK(&sch->mutex_running);
+	if (handle == NULL)
+		err_flag = 1;
+#endif /* __linux__ */
+
+	if (err_flag) {
+		if (sch->state == NOT_YET)
+			UNLOCK(&sch->mutex_running);
 		return INVALID_TID;
 	}
+
+#ifdef __linux__
+	sch->threads[node.index].thread_id = thread_id;
+#else
 	sch->threads[node.index].thread_id = handle;
 #endif /* __linux__ */
 
@@ -275,12 +257,13 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 			preempt = remove_head(sch->ready_q);
 			preempt_crt_thread(th_ind, &preempt, index);
 		}
-	} else {
-		sch->state = START;
+	} else
 		sch->threads[node.index].state = RUNNING;
-	}
 
-	UNLOCK(&sch->mutex_running);
+	if (sch->state == NOT_YET) {
+		sch->state = START;
+		UNLOCK(&sch->mutex_running);
+	}
 
 	return thread_id;
 }
@@ -292,12 +275,10 @@ void so_exec(void)
 	Node preempt;
 	Node const *pr;
 
-	LOCK(&sch->mutex_running);
 	pr = head(sch->ready_q);
-	if (!pr) {
-		UNLOCK(&sch->mutex_running);
+	if (!pr)
 		return;
-	}
+
 	th_ind = pr->index;
 
 	q = --sch->threads[th_ind].c_t_qu;
@@ -318,7 +299,6 @@ void so_exec(void)
 		preempt = remove_head(sch->ready_q);
 		preempt_crt_thread(th_ind, &preempt, pr->index);
 	}
-	UNLOCK(&sch->mutex_running);
 }
 
 int so_wait(unsigned int io)
@@ -327,11 +307,8 @@ int so_wait(unsigned int io)
 	Node pr_wait;
 	Node const *pr;
 
-	LOCK(&sch->mutex_running);
-	if (io >= sch->nr_events) {
-		UNLOCK(&sch->mutex_running);
+	if (io >= sch->nr_events)
 		return ERROR_;
-	}
 
 	pr_wait = remove_head(sch->ready_q);
 	th_ind = pr_wait.index;
@@ -346,7 +323,6 @@ int so_wait(unsigned int io)
 	sch->threads[th_ind].event = io;
 
 	block(th_ind);
-	UNLOCK(&sch->mutex_running);
 
 	return SUCCESS;
 }
@@ -405,11 +381,8 @@ int so_signal(unsigned int io)
 	unsigned int th_ind;
 
 	preempted = 0;
-	LOCK(&sch->mutex_running);
-	if (io >= sch->nr_events) {
-		UNLOCK(&sch->mutex_running);
+	if (io >= sch->nr_events)
 		return ERROR_;
-	}
 
 	node = remove_head(sch->ready_q);
 	th_ind = node.index;
@@ -435,8 +408,6 @@ int so_signal(unsigned int io)
 	else
 		add(sch->ready_q, node);
 
-	UNLOCK(&sch->mutex_running);
-
 	return nr_wake_up_threads;
 }
 
@@ -454,7 +425,6 @@ void so_end(void)
 #else
 		WAIT(&sch->cond_end, &sch->mutex_end, INFINITE);
 #endif /* __linux__ */
-
 	UNLOCK(&sch->mutex_end);
 
 	for (i = 0; i < sch->nr_threads; ++i)

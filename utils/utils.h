@@ -42,9 +42,6 @@ typedef CRITICAL_SECTION MUTEX;
 #define INVALID_INDEX	(-1)
 #define INVALID_EVENT	(-1)
 
-#define PREEMPTED		1
-#define NO_PREEMPTED	0
-
 typedef enum {
 	NEW,
 	READY,
@@ -69,7 +66,6 @@ typedef struct {
 	int c_t_qu;
 	STATE state;
 	int event;
-	unsigned char preempted;
 	THREAD_ID thread_id;
 } thread_t;
 
