@@ -28,6 +28,9 @@
 #include <string.h>
 #include <time.h>
 
+/*
+ * structura ce caracterizeaza componenta de logging.
+ */
 typedef struct {
 #ifdef __linux__
 	int fd;

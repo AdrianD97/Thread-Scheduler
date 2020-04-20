@@ -4,10 +4,10 @@ CFLAGS = -fPIC -Wall
 .PHONY: build
 build: libscheduler.so
 
-libscheduler.so: so_scheduler.o PriorityQueue.o Heap.o heap_util.o
+libscheduler.so: so_scheduler.o PriorityQueue.o Heap.o ready_queue_utils.o
 	$(CC) -shared -o $@ $^
 
-heap_util.o: PriorityQueue/Heap/heap_util.c
+ready_queue_utils.o: utils/ready_queue_utils.c
 	$(CC) $(CFLAGS) -o $@ -c $^
 
 Heap.o: PriorityQueue/Heap/Heap.c
@@ -21,4 +21,4 @@ so_scheduler.o: so_scheduler.c
 
 .PHONY: clean
 clean:
-	rm -f so_scheduler.o PriorityQueue.o Heap.o heap_util.o libscheduler.so
+	rm -f so_scheduler.o PriorityQueue.o Heap.o ready_queue_utils.o libscheduler.so

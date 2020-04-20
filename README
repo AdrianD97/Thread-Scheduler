@@ -1,0 +1,68 @@
+Nume: Stefan Adrian-Daniel
+Grupa: 334CA
+
+		Tema 4 Planificator de threaduri
+	Ideea pe care m-am bazat in implementarea planificatorului se
+bazeza pe urmatoarea observatie: la fiecare moment de timp un singur
+thread se gaseste in starea de RUNNING, iar celelalte in oricare
+din starile ce descrie diagrama de starii. Pentru a asigura ca
+un singur thread ruleaza la fiecare moment de timp, am utilizat
+doua elemente de sincronizare(care fac o echipa perfecta, ca Bayern
+Munchen in 2013): cond_running si mutex_running, o variabila conditie
+si un mutex. De asemenea, pentru a asigura terminarea tuturor
+threadurilor inainte de parasirea sistemului, am utilizat o alta pereche
+importanta de elemnete de sincronizare(si acestea fac o echipa care nu stiu
+sa renunte, ca Dinamo Bucuresti in meciul de la Liberec, din anul 2009):
+cond_end si mutex_end, dupa cum ai intuit, tot o variabila conditie
+si un mutex.
+	Probabil ca acum te intrebi cum de stiu eu pentru fiecare thread
+starea lui. Permite-mi sa iti raspund in doua moduri: 1. vezi
+structura thread_t. 2. daca nu te-ai lamurit, atunci eu retin(in
+vectorul de thread-uri al sitemului planificator) date ce caracterizeza
+fiecare thread din sistemul planificator. Printre aceste date, am si starea
+thread-ului la fiecare moment de timp.
+	Acum ca te-am lamurit(sper) cu starile thread-urilor, sigur te intrebi
+cum am reusit sa implementez algoritmul de planificare Round Robin cu
+prioritati. Pai, foarte simplu: am utilizat o coada de prioritati(implementarea
+cozii se bazeza pe un max heap). Bun, dar sigur te intrebi cum reusesc sa planific
+thread-urile cu aceeasi prioritate dupa modelul Round Robin folosind un heap.
+Din nou, permite-mi sa te lamuresc, in structura de Node(care descrie un element
+din heap) am un camp numit timestamp, pe care functiile de adaugare si stergere
+din heap il utilizeza. Cum? Simplu: daca un nod are un timestamp mai mic, atunci
+va avea prioritate fata de celelalte. De exemplu daca am introdus 3 noduri
+cu aceeasi prioritate(n1 -> t1, n2 -> t2, n3 -> t3), cu (t1 < t2 < t3), n1 va
+fi planificat inaintea celoralalte doua cand va veni momentul(deci se va gasi in
+capul cozii). Iar cand n1 va fi preemptat si nu s-a introdus un nou thread cu o
+prioritate mai mare in coada, atunci acesta va fi adaugat in coada(daca nu cumva
+s-a terminat) cu un alt timestamp (t4 > t3 > t2), deci vom avea urmatoarea ordine
+a nodurilor (n2 -> t2, n3 -> t3, n1 -> t4). Si in acest fel suntem cinstiti cu
+toate thread-urile de aceeasi prioritate.
+
+	Obs:
+1. Pentru a implementa task-ul, am creat o singura arhiva(care contine fisierele
+sursa necesare), alegerea platformei realizandu-se la compilare. Sa nu uit sa
+mentionez, exista o mica diferenta intre cele doua arhive: fisierul Makefile
+care obtine biblioteca dinamica in care este implementat sistemul planificator
+pentru fiecare din cele doua platforme :)).
+
+2. In folderul Logger se gaseste implementarea componentei de logging; Exista o
+metoda de crearea a componentei, de scriere a unui mesaj in fisierul de log si
+o metoda de distrugere(eliberarea resureselor) a componentei de logging. Structura
+fisiertului de logging este urmatoarea: linii de forma (index	date	message),
+unde index reprezinta numarul liniei din fisier, date -> data la care s-a adaugat
+mesajul message.
+
+3. De asemenea, dupa cum ai observat, in radacina arhivei se gasete un folder numit
+tests. Acest folder contine testarea structurii de coada de prioritate si componentei
+de logging, si de asemenea, implementarea planificatorului si testarea acestui, cu
+componenta de logging integrata(vezi continutul folderului scheduler).
+
+4. Asta este asa ca sa ma laud :))) : actuala implementare a cozii READY, imi permite
+sa introduc in sistem thread-uri care pot avea orice prioritate, fara a ne limita
+la o prioritate maxima de 5.
+
+	Cam atat pentru azi. Trebuie sa mentionez ca tema a fost foarte interesanta.
+Am invatat foarte multe lucruri noi. Pentru prima data(de cand sunt la facultate),
+pot spune ca aceasta tema a fost un task foarte complex si util, la care mi-a facut
+foarte mare placere sa lucrez. Chiar m-am concentart foarte mult pe acesata tema.
+Felicitari celui/celor care a/au propus-o.

@@ -1,14 +1,25 @@
 #include "so_scheduler.h"
 #include "utils/utils.h"
 
+/*
+ * referinta catre componenta de tip planificator
+ */
 static scheduler_t *sch;
 
+/*
+ * afiseaza un mesaj in fisierul de logging,
+ * daca componenta este activata.
+ */
 static void LOG(char *message)
 {
 	if (sch && sch->logger)
 		logg(sch->logger, message);
 }
 
+/*
+ * in functie de parametrul enable se activeaza sau nu
+ * componenta de logging.
+ */
 int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 {
 #ifdef __linux__
@@ -119,6 +130,10 @@ int so_init(unsigned int time_quantum, unsigned int io, bool enable)
 	return SUCCESS;
 }
 
+/*
+ * blocheaza executia unui thread din sistem
+ * pana cand starea lui devine din nou RUNNING.
+ */
 static void block(unsigned int index)
 {
 	BROADCAST(&sch->cond_running);
@@ -133,6 +148,14 @@ static void block(unsigned int index)
 #endif /* __linux__ */
 }
 
+/*
+ * preempteaza thread-ul curent deoarece i-a expirat
+ * cuanta de timp, a fost introdus un thread cu o
+ * prioritate mai mare sau a fost trezit un thread
+ * cu o prioritate mai mare. Marcheaza thread-ul
+ * curent ca fiind in starea READY, iar noul thread
+ * va fi marcat ca fiind in starea RUNNING.
+ */
 static void preempt_crt_thread(unsigned int crt_ind,
 	Node *node, unsigned int new_index)
 {
@@ -382,6 +405,11 @@ int so_wait(unsigned int io)
 	return SUCCESS;
 }
 
+/*
+ * Marcheaza un thread, care a fost in starea
+ * WAITING si care a fost trezit de un apel
+ * so_signal, ca fiind in starea READY.
+ */
 static void change(unsigned int th_ind)
 {
 	Node node;
@@ -395,6 +423,11 @@ static void change(unsigned int th_ind)
 	add(sch->ready_q, node);
 }
 
+/*
+ * Marcheaza thread-urile care erau blocate la evenimentul
+ * 'event' ca fiind deblocate(deci le adauga in coada
+ * READY).
+ */
 static unsigned int wake_up(unsigned int event)
 {
 	int left, right;

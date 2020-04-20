@@ -5,10 +5,10 @@ LIB = -lpthread
 .PHONY: build
 build: test_so_scheduler
 
-test_so_scheduler: test_so_scheduler.c so_scheduler.o Logger.o PriorityQueue.o Heap.o heap_util.o
+test_so_scheduler: test_so_scheduler.c so_scheduler.o Logger.o PriorityQueue.o Heap.o ready_queue_utils.o
 	$(CC) -o $@ $^ $(LIB)
 
-heap_util.o: ../../PriorityQueue/Heap/heap_util.c
+ready_queue_utils.o: ../../utils/ready_queue_utils.c
 	$(CC) $(CFLAGS) -o $@ -c $^
 
 Heap.o: ../../PriorityQueue/Heap/Heap.c

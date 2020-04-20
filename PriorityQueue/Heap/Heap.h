@@ -3,13 +3,20 @@
 
 #include <stdlib.h>
 
-#include "heap_util.h"
+#include "../../utils/ready_queue_utils.h"
 
 #define MIN_HEAP 1
 #define MAX_HEAP 0
 
 #define ROOT 1
 
+/*
+ * descrie structura de heap:
+ * dimensiunea maxima a acestuia, dimensiunea
+ * curenta, functia de comparare a doua elemnte
+ * din structura, array-ul asociat, in care
+ * se retin elementele structurii de date.
+ */
 typedef struct {
 	int size;
 	int index;

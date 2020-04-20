@@ -4,10 +4,10 @@ LINK = link
 
 build: libscheduler.dll
 
-libscheduler.dll: so_scheduler.obj PriorityQueue.obj Heap.obj heap_util.obj
+libscheduler.dll: so_scheduler.obj PriorityQueue.obj Heap.obj ready_queue_utils.obj
 	$(LINK) /nologo /dll /out:$@ /implib:libscheduler.lib $**
 
-heap_util.obj: PriorityQueue/Heap/heap_util.c
+ready_queue_utils.obj: utils/ready_queue_utils.c
 	$(CC) $(CFLAGS) /Fo$@ /c $**
 
 Heap.obj: PriorityQueue/Heap/Heap.c
@@ -20,5 +20,5 @@ so_scheduler.obj: so_scheduler.c
 	$(CC) $(CFLAGS) /Fo$@ /c $**
 
 clean:
-	del /Q heap_util.obj Heap.obj PriorityQueue.obj so_scheduler.obj 2>NUL
+	del /Q ready_queue_utils.obj Heap.obj PriorityQueue.obj so_scheduler.obj 2>NUL
 	del /Q libscheduler.dll libscheduler.lib libscheduler.exp 2>NUL

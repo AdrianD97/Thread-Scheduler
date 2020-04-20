@@ -4,10 +4,10 @@ LINK = link
 
 build: test_so_scheduler.exe
 
-test_so_scheduler.exe: test_so_scheduler.obj so_scheduler.obj Logger.obj PriorityQueue.obj Heap.obj heap_util.obj
+test_so_scheduler.exe: test_so_scheduler.obj so_scheduler.obj Logger.obj PriorityQueue.obj Heap.obj ready_queue_utils.obj
 	$(LINK) /nologo /out:$@ $**
 
-heap_util.obj: ../../PriorityQueue/Heap/heap_util.c
+ready_queue_utils.obj: ../../utils/ready_queue_utils.c
 	$(CC) $(CFLAGS) /Fo$@ /c $**
 
 Heap.obj: ../../PriorityQueue/Heap/Heap.c

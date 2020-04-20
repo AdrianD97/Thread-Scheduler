@@ -42,6 +42,10 @@ typedef CRITICAL_SECTION MUTEX;
 #define INVALID_INDEX	(-1)
 #define INVALID_EVENT	(-1)
 
+/*
+ * Starile in care poate fi, la fiecare moment de timp,
+ * un thread introdus in sistem printr-un apel so_fork.
+ */
 typedef enum {
 	NEW,
 	READY,
@@ -50,17 +54,43 @@ typedef enum {
 	TERMINATED
 } STATE;
 
+/*
+ * Starile in care poate fi planificatorul la fiecare
+ * moment de timp.
+ * Stare NOT_YET sugereaza faptul ca inca nu s-a efectuat
+ * primul apel de so_fork (din contextul testelor) care
+ * introduce primul thread in sistem. Stare START marcheaza
+ * faptul ca s-a creat primul thread si a fost introdus in
+ * sistem. Starea END marcheaza faptul ca toate thread-urile
+ * s-au terminat, anuntand planificatorul (vezi so_end) ca
+ * poate elibera resursele utilizate.
+ */
 typedef enum {
 	NOT_YET,
 	START,
 	END
 } SCH_STATE;
 
+/*
+ * Descrie structura argumentului primit de functia
+ * handler (vezi thread_func). Campul func reprezinta
+ * un pointer la functia pe care o va executa noul
+ * thread introdus in planificator. Iar campul node
+ * retine informatiile care caracterizeaza noul thread,
+ * precum: prioritate, index, timestamp.
+ */
 typedef struct {
 	so_handler *func;
 	Node node;
 } th_func_arg_t;
 
+/*
+ * Structura ce descrie caracteristicile fiecarui thread
+ * din sistemul planificator:
+ * prioritatea, cuanta de timp curenta, starea, evenimentul
+ * sau operatia IO la care s-a blocat(deci cand este in starea
+ * WAITING), id-ul thread-ului de sistem.
+ */
 typedef struct {
 	unsigned int priority;
 	int c_t_qu;
@@ -69,6 +99,22 @@ typedef struct {
 	THREAD_ID thread_id;
 } thread_t;
 
+/*
+ * Structura ce descrie sistemul planificator.
+ * Caracteristicile acestuia sunt:
+ * numarul de thread-uri pe care le are in subordine
+ * la fiecare moment de timp; cuanta de timp dupa care
+ * fiecare thread aflat in RUNNING va trebui sa fie
+ * preemptat; numarul de evenimente suportate; starea;
+ * timestamp ajuta la implementarea modelului Round
+ * Robin pentru thread-urile cu aceeasi prioritate
+ * (pentru detalii vezi structura Node); un vector
+ * de thread-uri; coada READY; elementele de
+ * sincronizare, care asigura ca la fiecare moment
+ * de timp exista un singur thread aflat in starea
+ * RUNNING, respectiv, asteptarea terminarii tuturor
+ * thread-urilor inainte de parasirea sistemului.
+ */
 typedef struct {
 	unsigned int nr_threads;
 	unsigned int t_qu;

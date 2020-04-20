@@ -1,6 +1,6 @@
 CFLAGS = /MD /nologo
 
-test_priority_queue.exe: test_priority_queue.c ../PriorityQueue/PriorityQueue.c ../PriorityQueue/Heap/Heap.c ../PriorityQueue/Heap/heap_util.c
+test_priority_queue.exe: test_priority_queue.c ../PriorityQueue/PriorityQueue.c ../PriorityQueue/Heap/Heap.c ../utils/ready_queue_utils.c
 	cl $(CFLAGS) /Fe$@ $**
 
 clean:
