@@ -202,8 +202,10 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 		LOCK(&sch->mutex_running);
 	else {
 		pr = head(sch->ready_q);
-		if (!pr)
+		if (!pr) {
+			free(arg);
 			return INVALID_TID;
+		}
 
 		th_ind = pr->index;
 	}
@@ -241,6 +243,7 @@ tid_t so_fork(so_handler *func, unsigned int priority)
 	if (err_flag) {
 		if (sch->state == NOT_YET)
 			UNLOCK(&sch->mutex_running);
+		free(arg);
 		return INVALID_TID;
 	}
 
@@ -455,6 +458,8 @@ void so_end(void)
 		WAIT(&sch->cond_end, &sch->mutex_end, INFINITE);
 #endif /* __linux__ */
 	UNLOCK(&sch->mutex_end);
+
+	SLEEP(TIME);
 
 	for (i = 0; i < sch->nr_threads; ++i)
 #ifdef __linux__
