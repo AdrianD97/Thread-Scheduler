@@ -18,7 +18,7 @@ typedef pthread_mutex_t MUTEX;
 #define DESTROY_LOCK pthread_mutex_destroy
 
 #define SLEEP	sleep
-#define TIME	0.2
+#define TIME	0.05
 
 #define RET_VAL NULL
 #else
@@ -37,7 +37,7 @@ typedef CRITICAL_SECTION MUTEX;
 #define DESTROY_LOCK DeleteCriticalSection
 
 #define SLEEP	Sleep
-#define TIME	200
+#define TIME	50
 
 #define RET_VAL 0
 #endif /* __linux__ */
