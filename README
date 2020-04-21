@@ -3,9 +3,9 @@ Grupa: 334CA
 
 		Tema 4 Planificator de threaduri
 	Ideea pe care m-am bazat in implementarea planificatorului se
-bazeza pe urmatoarea observatie: la fiecare moment de timp un singur
+bazeaza pe urmatoarea observatie: la fiecare moment de timp un singur
 thread se gaseste in starea de RUNNING, iar celelalte in oricare
-din starile ce descrie diagrama de starii. Pentru a asigura ca
+din starile ce descrie diagrama de stari. Pentru a asigura ca
 un singur thread ruleaza la fiecare moment de timp, am utilizat
 doua elemente de sincronizare(care fac o echipa perfecta, ca Bayern
 Munchen in 2013): cond_running si mutex_running, o variabila conditie
@@ -48,7 +48,7 @@ pentru fiecare din cele doua platforme :)).
 2. In folderul Logger se gaseste implementarea componentei de logging; Exista o
 metoda de crearea a componentei, de scriere a unui mesaj in fisierul de log si
 o metoda de distrugere(eliberarea resureselor) a componentei de logging. Structura
-fisiertului de logging este urmatoarea: linii de forma (index	date	message),
+fisierului de logging este urmatoarea: linii de forma (index	date	message),
 unde index reprezinta numarul liniei din fisier, date -> data la care s-a adaugat
 mesajul message.
 
@@ -61,8 +61,11 @@ componenta de logging integrata(vezi continutul folderului scheduler).
 sa introduc in sistem thread-uri care pot avea orice prioritate, fara a ne limita
 la o prioritate maxima de 5.
 
+Git:
+	https://github.com/AdrianD97/Thread-Scheduler (repo-ul este momentat private)
+
 	Cam atat pentru azi. Trebuie sa mentionez ca tema a fost foarte interesanta.
 Am invatat foarte multe lucruri noi. Pentru prima data(de cand sunt la facultate),
 pot spune ca aceasta tema a fost un task foarte complex si util, la care mi-a facut
-foarte mare placere sa lucrez. Chiar m-am concentart foarte mult pe acesata tema.
+foarte mare placere sa lucrez. Chiar m-am focusat foarte mult pe acesata tema.
 Felicitari celui/celor care a/au propus-o.
