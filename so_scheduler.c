@@ -138,6 +138,7 @@ static DWORD WINAPI thread_func(LPVOID arg)
 	Node node;
 	Node const *pr;
 	th_func_arg_t arg_th_func;
+	unsigned int last = 0;
 
 	arg_th_func = *(th_func_arg_t *)arg;
 	free(arg);
@@ -162,13 +163,17 @@ static DWORD WINAPI thread_func(LPVOID arg)
 	if (pr) {
 		sch->threads[pr->index].state = RUNNING;
 		BROADCAST(&sch->cond_running);
-	} else {
+	} else
+		last = 1;
+
+	UNLOCK(&sch->mutex_running);
+
+	if (last) {
 		LOCK(&sch->mutex_end);
 		sch->state = END;
 		SIGNAL(&sch->cond_end);
 		UNLOCK(&sch->mutex_end);
 	}
-	UNLOCK(&sch->mutex_running);
 
 	return RET_VAL;
 }
@@ -458,8 +463,6 @@ void so_end(void)
 		WAIT(&sch->cond_end, &sch->mutex_end, INFINITE);
 #endif /* __linux__ */
 	UNLOCK(&sch->mutex_end);
-
-	SLEEP(TIME);
 
 	for (i = 0; i < sch->nr_threads; ++i)
 #ifdef __linux__
